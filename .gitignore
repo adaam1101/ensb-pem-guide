@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+admin_pass.txt
+.DS_Store
+Thumbs.db

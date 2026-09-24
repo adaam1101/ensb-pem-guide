@@ -1,0 +1,132 @@
+{
+  "modules": [
+    {
+      "id": "didac",
+      "name": "TEFL Didactics",
+      "code": "DID 201",
+      "coef": 3,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "didac_l1",
+          "title": "TEFL Methodology & Teaching Frameworks",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "ling",
+      "name": "Linguistics & Phonetics",
+      "code": "LING 202",
+      "coef": 3,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "ling_l1",
+          "title": "English Phonology & Acoustic Phonetics",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "lit",
+      "name": "British & American Literature",
+      "code": "LIT 203",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "lit_l1",
+          "title": "Historical Context: British Literary Movements",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "gram",
+      "name": "Advanced Grammar",
+      "code": "GRM 204",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "gram_l1",
+          "title": "Complex Sentence Structures & Clause Analysis",
+          "type": "DOC",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "wre",
+      "name": "Written Expression",
+      "code": "WRE 205",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "wre_l1",
+          "title": "Academic Essay Structure & Argumentation",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "ore",
+      "name": "Oral Expression & Phonology",
+      "code": "ORE 206",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "ore_l1",
+          "title": "Intonation Patterns & Suprasegmental Features",
+          "type": "PPT",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "trans",
+      "name": "Translation Techniques",
+      "code": "TRN 207",
+      "coef": 1,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "trans_l1",
+          "title": "Translating Idiomatic & Pragmatic Structures",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    }
+  ],
+  "announcements": [
+    {
+      "id": "ann_welcome",
+      "title": "Welcome to 2nd Year English (PEM)",
+      "text": "Official academic portal and syllabus resource guide created for 2nd Year PEM students at École Normale Supérieure de Bouzareah.",
+      "date": "Academic Year 2026/2027"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "t_ex",
+      "name": "Faculty Administration",
+      "subject": "ENSB English Department",
+      "email": "adam.ameyoud@ensb.dz"
+    }
+  ]
+}
