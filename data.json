@@ -1,47 +1,15 @@
 {
   "modules": [
     {
-      "id": "didac",
-      "name": "TEFL Didactics",
-      "code": "DID 201",
-      "coef": 3,
-      "semester": "s1",
-      "lessons": [
-        {
-          "id": "didac_l1",
-          "title": "TEFL Methodology & Teaching Frameworks",
-          "type": "PDF",
-          "url": "",
-          "date": "Semester 1"
-        }
-      ]
-    },
-    {
-      "id": "ling",
-      "name": "Linguistics & Phonetics",
-      "code": "LING 202",
-      "coef": 3,
-      "semester": "s1",
-      "lessons": [
-        {
-          "id": "ling_l1",
-          "title": "English Phonology & Acoustic Phonetics",
-          "type": "PDF",
-          "url": "",
-          "date": "Semester 1"
-        }
-      ]
-    },
-    {
-      "id": "lit",
-      "name": "British & American Literature",
-      "code": "LIT 203",
+      "id": "wrt",
+      "name": "Writing Techniques",
+      "code": "WRT 201",
       "coef": 2,
       "semester": "s1",
       "lessons": [
         {
-          "id": "lit_l1",
-          "title": "Historical Context: British Literary Movements",
+          "id": "wrt_l1",
+          "title": "Academic Paragraph & Essay Structure",
           "type": "PDF",
           "url": "",
           "date": "Semester 1"
@@ -49,15 +17,31 @@
       ]
     },
     {
-      "id": "gram",
-      "name": "Advanced Grammar",
-      "code": "GRM 204",
+      "id": "cul",
+      "name": "Culture Studies",
+      "code": "CUL 202",
       "coef": 2,
       "semester": "s1",
       "lessons": [
         {
-          "id": "gram_l1",
-          "title": "Complex Sentence Structures & Clause Analysis",
+          "id": "cul_l1",
+          "title": "Introduction to British & Anglophone Cultural Studies",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "grm",
+      "name": "Grammar",
+      "code": "GRM 203",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "grm_l1",
+          "title": "Complex Syntactic Structures & Clause Combinations",
           "type": "DOC",
           "url": "",
           "date": "Semester 1"
@@ -65,15 +49,15 @@
       ]
     },
     {
-      "id": "wre",
-      "name": "Written Expression",
-      "code": "WRE 205",
+      "id": "lin",
+      "name": "Linguistics",
+      "code": "LIN 204",
       "coef": 2,
       "semester": "s1",
       "lessons": [
         {
-          "id": "wre_l1",
-          "title": "Academic Essay Structure & Argumentation",
+          "id": "lin_l1",
+          "title": "Core Theoretical Linguistics & Structural Approaches",
           "type": "PDF",
           "url": "",
           "date": "Semester 1"
@@ -81,15 +65,15 @@
       ]
     },
     {
-      "id": "ore",
-      "name": "Oral Expression & Phonology",
-      "code": "ORE 206",
+      "id": "ls",
+      "name": "Listening and Speaking",
+      "code": "LS 205",
       "coef": 2,
       "semester": "s1",
       "lessons": [
         {
-          "id": "ore_l1",
-          "title": "Intonation Patterns & Suprasegmental Features",
+          "id": "ls_l1",
+          "title": "Aural Comprehension & Communicative Fluency",
           "type": "PPT",
           "url": "",
           "date": "Semester 1"
@@ -97,15 +81,63 @@
       ]
     },
     {
-      "id": "trans",
-      "name": "Translation Techniques",
-      "code": "TRN 207",
+      "id": "php",
+      "name": "Phonetics and Phonology",
+      "code": "PHP 206",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "php_l1",
+          "title": "Articulatory Phonetics & English Suprasegmentals",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "rdt",
+      "name": "Reading Techniques",
+      "code": "RDT 207",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "rdt_l1",
+          "title": "Critical Reading Strategies & Textual Analysis",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "ail",
+      "name": "AI in Learning",
+      "code": "AIL 208",
       "coef": 1,
       "semester": "s1",
       "lessons": [
         {
-          "id": "trans_l1",
-          "title": "Translating Idiomatic & Pragmatic Structures",
+          "id": "ail_l1",
+          "title": "Educational Technology & AI Literacy in Language Pedagogy",
+          "type": "PDF",
+          "url": "",
+          "date": "Semester 1"
+        }
+      ]
+    },
+    {
+      "id": "psy",
+      "name": "Child and Adolescent Development Psychology",
+      "code": "PSY 209",
+      "coef": 2,
+      "semester": "s1",
+      "lessons": [
+        {
+          "id": "psy_l1",
+          "title": "Developmental Stages & Cognitive Growth in Adolescence",
           "type": "PDF",
           "url": "",
           "date": "Semester 1"
@@ -116,8 +148,8 @@
   "announcements": [
     {
       "id": "ann_welcome",
-      "title": "Welcome to 2nd Year English (PEM)",
-      "text": "Official academic portal and syllabus resource guide created for 2nd Year PEM students at École Normale Supérieure de Bouzareah.",
+      "title": "2nd Year PEM Curriculum Configured (2026/2027)",
+      "text": "Official academic modules configured for 2nd Year English (PEM) students at École Normale Supérieure de Bouzareah. Access study materials, calculate semester averages, and reach faculty contacts.",
       "date": "Academic Year 2026/2027"
     }
   ],

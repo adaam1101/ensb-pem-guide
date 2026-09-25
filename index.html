@@ -1647,20 +1647,22 @@ function getAllLessons() {
   return list;
 }
 
-/* --- SEED DEFAULT 2ND YEAR PEM MODULES IF STORAGE EMPTY --- */
-(function seedPEMModulesIfEmpty() {
+/* --- SEED DEFAULT 2ND YEAR PEM MODULES (OFFICIAL 2026/2027) --- */
+(function seedPEMModules() {
+  const officialModules = [
+    { id: 'wrt',  name: 'Writing Techniques', code: 'WRT 201', coef: 2, semester: 's1' },
+    { id: 'cul',  name: 'Culture Studies', code: 'CUL 202', coef: 2, semester: 's1' },
+    { id: 'grm',  name: 'Grammar', code: 'GRM 203', coef: 2, semester: 's1' },
+    { id: 'lin',  name: 'Linguistics', code: 'LIN 204', coef: 2, semester: 's1' },
+    { id: 'ls',   name: 'Listening and Speaking', code: 'LS 205', coef: 2, semester: 's1' },
+    { id: 'php',  name: 'Phonetics and Phonology', code: 'PHP 206', coef: 2, semester: 's1' },
+    { id: 'rdt',  name: 'Reading Techniques', code: 'RDT 207', coef: 2, semester: 's1' },
+    { id: 'ail',  name: 'AI in Learning', code: 'AIL 208', coef: 1, semester: 's1' },
+    { id: 'psy',  name: 'Child and Adolescent Development Psychology', code: 'PSY 209', coef: 2, semester: 's1' }
+  ];
   const existing = readStore(STORAGE.MOD);
-  if (!existing || existing.length === 0) {
-    const pemModules = [
-      { id: 'didac', name: 'TEFL Didactics', code: 'DID 201', coef: 3, semester: 's1' },
-      { id: 'ling',  name: 'Linguistics & Phonetics', code: 'LING 202', coef: 3, semester: 's1' },
-      { id: 'lit',   name: 'British & American Literature', code: 'LIT 203', coef: 2, semester: 's1' },
-      { id: 'gram',  name: 'Advanced Grammar', code: 'GRM 204', coef: 2, semester: 's1' },
-      { id: 'wre',   name: 'Written Expression', code: 'WRE 205', coef: 2, semester: 's1' },
-      { id: 'ore',   name: 'Oral Expression & Phonology', code: 'ORE 206', coef: 2, semester: 's1' },
-      { id: 'trans', name: 'Translation Techniques', code: 'TRN 207', coef: 1, semester: 's1' }
-    ];
-    writeStore(STORAGE.MOD, pemModules);
+  if (!existing || existing.length === 0 || existing.some(m => m.id === 'didac')) {
+    writeStore(STORAGE.MOD, officialModules);
   }
 })();
 
