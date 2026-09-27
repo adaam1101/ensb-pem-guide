@@ -605,6 +605,10 @@ input, select, textarea, button {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       Announcements
     </button>
+    <button class="nav-tab-btn" data-tab="tab-timetable" onclick="setTab('tab-timetable')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="15" r="1.5"/></svg>
+      Timetable &amp; Schedule
+    </button>
     <button class="nav-tab-btn" data-tab="tab-teachers" onclick="setTab('tab-teachers')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Faculty Directory
@@ -823,7 +827,230 @@ function setTab(tabId) {
 }
 
 /* --- RENDER ALL SECTIONS --- */
+
+/* ==========================================================================
+   ADMIN TIMETABLE MANAGEMENT
+   ========================================================================== */
+function renderAdminTimetable() {
+  const container = document.getElementById('adminTimetableContainer');
+  if (!container) return;
+
+  if (!currentData.timetable) currentData.timetable = {};
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  const group = currentData.timetable[groupKey] || { name: 'Group ' + groupKey, schedule: {} };
+
+  const days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+
+  let html = `<div style="display:flex;flex-direction:column;gap:18px">`;
+
+  days.forEach(day => {
+    const sessions = (group.schedule && group.schedule[day]) || [];
+    html += `
+      <div class="hub-card" style="padding:16px 20px;border-radius:12px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:15px;font-weight:800;color:var(--text-main)">${day}</span>
+            <span class="meta-tag green">${sessions.length} sessions</span>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="openAddSessionModal('${day}')">+ Add to ${day}</button>
+        </div>
+    `;
+
+    if (sessions.length === 0) {
+      html += `<div style="font-size:13px;color:var(--text-light);padding:8px 0">No classes scheduled on ${day}.</div>`;
+    } else {
+      html += `<div style="display:flex;flex-direction:column;gap:8px">`;
+      sessions.forEach((s, idx) => {
+        html += `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--bg-subtle);padding:10px 14px;border-radius:8px;border:1px solid var(--border)">
+            <div style="min-width:110px">
+              <strong style="font-size:13px;color:var(--primary)">${sanitize(s.time || (s.start + ' - ' + s.end))}</strong>
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700">${sanitize(s.type || 'TD')}</div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:800;color:var(--text-main)">${sanitize(s.subject)}</div>
+              <div style="font-size:12px;color:var(--text-muted)">👤 ${sanitize(s.teacher)} &nbsp;•&nbsp; 📍 <strong style="color:var(--text-main)">${sanitize(s.room)}</strong></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="btn btn-outline btn-sm" onclick="openEditSessionModal('${day}', ${idx})">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteSession('${day}', ${idx})">Delete</button>
+            </div>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function openAddSessionModal(presetDay = 'Saturday') {
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  openModal(`
+    <div class="modal-header">Add Classroom Session (${groupKey.toUpperCase()})</div>
+    <div class="form-field">
+      <label>Day of Week</label>
+      <select id="sessDay">
+        <option value="Saturday" ${presetDay==='Saturday'?'selected':''}>Saturday</option>
+        <option value="Sunday" ${presetDay==='Sunday'?'selected':''}>Sunday</option>
+        <option value="Monday" ${presetDay==='Monday'?'selected':''}>Monday</option>
+        <option value="Tuesday" ${presetDay==='Tuesday'?'selected':''}>Tuesday</option>
+        <option value="Wednesday" ${presetDay==='Wednesday'?'selected':''}>Wednesday</option>
+        <option value="Thursday" ${presetDay==='Thursday'?'selected':''}>Thursday</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field">
+        <label>Start Time (HH:MM)</label>
+        <input type="text" id="sessStart" placeholder="10:00">
+      </div>
+      <div class="form-field">
+        <label>End Time (HH:MM)</label>
+        <input type="text" id="sessEnd" placeholder="11:30">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Subject / Module</label>
+      <input type="text" id="sessSubject" placeholder="e.g. Culture Studies">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field">
+        <label>Type</label>
+        <select id="sessType">
+          <option value="TD">TD</option>
+          <option value="TP / Lab">TP / Lab</option>
+          <option value="Lecture">Lecture</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Room / Amphitheatre</label>
+        <input type="text" id="sessRoom" placeholder="e.g. Room 10">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Teacher</label>
+      <input type="text" id="sessTeacher" placeholder="e.g. Dr. Doukha">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewSession()">Save Class</button>
+    </div>
+  `);
+}
+
+function saveNewSession() {
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  const day = document.getElementById('sessDay').value;
+  const start = document.getElementById('sessStart').value.trim();
+  const end = document.getElementById('sessEnd').value.trim();
+  const subject = document.getElementById('sessSubject').value.trim();
+  const type = document.getElementById('sessType').value;
+  const room = document.getElementById('sessRoom').value.trim();
+  const teacher = document.getElementById('sessTeacher').value.trim();
+
+  if (!start || !end || !subject || !room) {
+    alert('Please fill out start time, end time, subject, and room.');
+    return;
+  }
+
+  if (!currentData.timetable) currentData.timetable = {};
+  if (!currentData.timetable[groupKey]) {
+    currentData.timetable[groupKey] = { name: 'Group ' + groupKey.toUpperCase(), schedule: {} };
+  }
+  if (!currentData.timetable[groupKey].schedule[day]) {
+    currentData.timetable[groupKey].schedule[day] = [];
+  }
+
+  currentData.timetable[groupKey].schedule[day].push({
+    id: `${day.substring(0,3).toLowerCase()}_${groupKey}_${Date.now()}`,
+    time: `${start} - ${end}`,
+    start: start,
+    end: end,
+    subject: subject,
+    type: type,
+    teacher: teacher,
+    room: room
+  });
+
+  closeModal();
+  renderAdminTimetable();
+  showToast('Class added! Remember to click "Save Changes" to publish.');
+}
+
+function openEditSessionModal(day, idx) {
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  const sess = currentData.timetable[groupKey].schedule[day][idx];
+  if (!sess) return;
+
+  openModal(`
+    <div class="modal-header">Edit Session (${day})</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field">
+        <label>Start Time</label>
+        <input type="text" id="editSessStart" value="${sanitize(sess.start)}">
+      </div>
+      <div class="form-field">
+        <label>End Time</label>
+        <input type="text" id="editSessEnd" value="${sanitize(sess.end)}">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Subject</label>
+      <input type="text" id="editSessSubject" value="${sanitize(sess.subject)}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field">
+        <label>Type</label>
+        <input type="text" id="editSessType" value="${sanitize(sess.type || 'TD')}">
+      </div>
+      <div class="form-field">
+        <label>Room</label>
+        <input type="text" id="editSessRoom" value="${sanitize(sess.room)}">
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Teacher</label>
+      <input type="text" id="editSessTeacher" value="${sanitize(sess.teacher)}">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditedSession('${day}', ${idx})">Update</button>
+    </div>
+  `);
+}
+
+function saveEditedSession(day, idx) {
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  const sess = currentData.timetable[groupKey].schedule[day][idx];
+  if (!sess) return;
+
+  sess.start = document.getElementById('editSessStart').value.trim();
+  sess.end = document.getElementById('editSessEnd').value.trim();
+  sess.time = `${sess.start} - ${sess.end}`;
+  sess.subject = document.getElementById('editSessSubject').value.trim();
+  sess.type = document.getElementById('editSessType').value.trim();
+  sess.room = document.getElementById('editSessRoom').value.trim();
+  sess.teacher = document.getElementById('editSessTeacher').value.trim();
+
+  closeModal();
+  renderAdminTimetable();
+  showToast('Session updated. Click "Save Changes" to publish.');
+}
+
+function deleteSession(day, idx) {
+  if (!confirm('Delete this class session?')) return;
+  const groupKey = (document.getElementById('adminGroupSelect') && document.getElementById('adminGroupSelect').value) || 'g5';
+  currentData.timetable[groupKey].schedule[day].splice(idx, 1);
+  renderAdminTimetable();
+  showToast('Session deleted.');
+}
+
 function renderAll() {
+  renderAdminTimetable();
   renderStats();
   renderModuleFolders();
   renderAnnouncements();

@@ -155,10 +155,958 @@
   ],
   "teachers": [
     {
-      "id": "t_ex",
-      "name": "Faculty Administration",
-      "subject": "ENSB English Department",
-      "email": "adam.ameyoud@ensb.dz"
+      "id": "t_doukha",
+      "name": "Dr. Doukha",
+      "title": "Associate Professor",
+      "module": "Culture Studies",
+      "email": "doukha@ensb.dz",
+      "office": "Block B, Room 14"
+    },
+    {
+      "id": "t_mikarzia",
+      "name": "Ms. Mikarzia",
+      "title": "Assistant Lecturer",
+      "module": "Grammar",
+      "email": "mikarzia@ensb.dz",
+      "office": "Block B, Room 08"
+    },
+    {
+      "id": "t_bounab",
+      "name": "Mrs. Bounab",
+      "title": "Lecturer",
+      "module": "Writing Techniques",
+      "email": "bounab@ensb.dz",
+      "office": "Block A, Room 12"
+    },
+    {
+      "id": "t_rebouh",
+      "name": "Prof. Rebouh",
+      "title": "Professor",
+      "module": "Child & Adolescent Dev. Psychology",
+      "email": "rebouh@ensb.dz",
+      "office": "Dept. Education & Psychology"
+    },
+    {
+      "id": "t_khelloul",
+      "name": "Dr. Khelloul",
+      "title": "Senior Lecturer",
+      "module": "Reading Techniques",
+      "email": "khelloul@ensb.dz",
+      "office": "Block B, Room 19"
+    },
+    {
+      "id": "t_laib",
+      "name": "Mr. Laib",
+      "title": "Lecturer",
+      "module": "Linguistics",
+      "email": "laib@ensb.dz",
+      "office": "Block A, Room 05"
+    },
+    {
+      "id": "t_djatit",
+      "name": "Mrs. Djatit",
+      "title": "Lecturer",
+      "module": "Phonetics & Phonology",
+      "email": "djatit@ensb.dz",
+      "office": "Block B, Room 22"
+    },
+    {
+      "id": "t_tihal",
+      "name": "Dr. Tihal",
+      "title": "Senior Lecturer",
+      "module": "Listening & Speaking",
+      "email": "tihal@ensb.dz",
+      "office": "Block B, Room 11"
+    },
+    {
+      "id": "t_amara",
+      "name": "Ms. Amara",
+      "title": "Lecturer",
+      "module": "Culture Studies",
+      "email": "amara@ensb.dz",
+      "office": "Block B, Room 16"
+    },
+    {
+      "id": "t_bensaid",
+      "name": "Mrs. Bensaid",
+      "title": "Lecturer",
+      "module": "Grammar",
+      "email": "bensaid@ensb.dz",
+      "office": "Block B, Room 09"
+    },
+    {
+      "id": "t_mouaci",
+      "name": "Dr. Mouaci",
+      "title": "Lecturer",
+      "module": "Reading Techniques",
+      "email": "mouaci@ensb.dz",
+      "office": "Block B, Room 17"
+    },
+    {
+      "id": "t_messekher",
+      "name": "Prof. Messekher",
+      "title": "Professor",
+      "module": "Linguistics",
+      "email": "messekher@ensb.dz",
+      "office": "Block A, Room 02"
+    },
+    {
+      "id": "t_fellah",
+      "name": "Mrs. Fellah",
+      "title": "Lecturer",
+      "module": "Phonetics & Phonology",
+      "email": "fellah@ensb.dz",
+      "office": "Block B, Room 21"
+    },
+    {
+      "id": "t_boulebnan",
+      "name": "Dr. Boulebnan",
+      "title": "Senior Lecturer",
+      "module": "Listening & Speaking",
+      "email": "boulebnan@ensb.dz",
+      "office": "Block B, Room 10"
+    },
+    {
+      "id": "t_sbaihi",
+      "name": "Ms. Sbaihi",
+      "title": "Lecturer",
+      "module": "Culture Studies",
+      "email": "sbaihi@ensb.dz",
+      "office": "Block B, Room 15"
+    },
+    {
+      "id": "t_belaid",
+      "name": "Ms. Belaid",
+      "title": "Lecturer",
+      "module": "Writing Techniques",
+      "email": "belaid@ensb.dz",
+      "office": "Block A, Room 15"
+    },
+    {
+      "id": "t_ict_faculty",
+      "name": "Department Faculty",
+      "title": "ICT Lab Instructors",
+      "module": "AI in Learning",
+      "email": "ict-lab@ensb.dz",
+      "office": "Computer Center Lab 4 & 5"
     }
-  ]
+  ],
+  "timetable": {
+    "g5": {
+      "name": "Group 5 (PEM)",
+      "default": true,
+      "schedule": {
+        "Saturday": [
+          {
+            "id": "sat_g5_1",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Culture Studies",
+            "type": "TD",
+            "teacher": "Dr. Doukha",
+            "room": "Room 10"
+          },
+          {
+            "id": "sat_g5_2",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Ms. Mikarzia",
+            "room": "Room 10"
+          },
+          {
+            "id": "sat_g5_3",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Ms. Mikarzia",
+            "room": "Room 10"
+          }
+        ],
+        "Sunday": [
+          {
+            "id": "sun_g5_1",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          },
+          {
+            "id": "sun_g5_2",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          },
+          {
+            "id": "sun_g5_3",
+            "time": "16:00 - 17:30",
+            "start": "16:00",
+            "end": "17:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          }
+        ],
+        "Monday": [
+          {
+            "id": "mon_g5_1",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Child & Adolescent Dev. Psychology",
+            "type": "TD",
+            "teacher": "Prof. Rebouh",
+            "room": "Room 37"
+          },
+          {
+            "id": "mon_g5_2",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Reading Techniques",
+            "type": "TD",
+            "teacher": "Dr. Khelloul",
+            "room": "Room 37"
+          },
+          {
+            "id": "mon_g5_3",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "AI in Learning (ICT)",
+            "type": "TP / Lab",
+            "teacher": "Department Faculty",
+            "room": "Lab 5"
+          }
+        ],
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "id": "thu_g5_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Mr. Laib",
+            "room": "Room 3"
+          },
+          {
+            "id": "thu_g5_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Djatit",
+            "room": "Room 35"
+          },
+          {
+            "id": "thu_g5_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g5_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g5_5",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          }
+        ]
+      }
+    },
+    "g1": {
+      "name": "Group 1 (PEM)",
+      "schedule": {
+        "Saturday": [
+          {
+            "id": "sat_g1_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Culture Studies",
+            "type": "TD",
+            "teacher": "Ms. Amara",
+            "room": "Room 4"
+          },
+          {
+            "id": "sat_g1_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 4"
+          },
+          {
+            "id": "sat_g1_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 4"
+          }
+        ],
+        "Sunday": [
+          {
+            "id": "sun_g1_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          },
+          {
+            "id": "sun_g1_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          },
+          {
+            "id": "sun_g1_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          }
+        ],
+        "Monday": [
+          {
+            "id": "mon_g1_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Reading Techniques",
+            "type": "TD",
+            "teacher": "Dr. Mouaci",
+            "room": "Room 35"
+          },
+          {
+            "id": "mon_g1_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Prof. Messekher",
+            "room": "Room 35"
+          },
+          {
+            "id": "mon_g1_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "AI in Learning (ICT)",
+            "type": "TP / Lab",
+            "teacher": "Department Faculty",
+            "room": "Lab 5"
+          },
+          {
+            "id": "mon_g1_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Child & Adolescent Dev. Psychology",
+            "type": "TD",
+            "teacher": "Prof. Rebouh",
+            "room": "Room 35"
+          }
+        ],
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "id": "thu_g1_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Fellah",
+            "room": "Room 36"
+          },
+          {
+            "id": "thu_g1_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g1_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Fellah",
+            "room": "Room 35"
+          },
+          {
+            "id": "thu_g1_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 35"
+          },
+          {
+            "id": "thu_g1_5",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 35"
+          }
+        ]
+      }
+    },
+    "g2": {
+      "name": "Group 2 (PEM)",
+      "schedule": {
+        "Saturday": [
+          {
+            "id": "sat_g2_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Ms. Mikarzia",
+            "room": "Room 7"
+          },
+          {
+            "id": "sat_g2_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Ms. Mikarzia",
+            "room": "Room 7"
+          },
+          {
+            "id": "sat_g2_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Culture Studies",
+            "type": "TD",
+            "teacher": "Dr. Doukha",
+            "room": "Room 7"
+          }
+        ],
+        "Sunday": [
+          {
+            "id": "sun_g2_1",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          },
+          {
+            "id": "sun_g2_2",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          },
+          {
+            "id": "sun_g2_3",
+            "time": "16:00 - 17:30",
+            "start": "16:00",
+            "end": "17:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 3"
+          }
+        ],
+        "Monday": [
+          {
+            "id": "mon_g2_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "AI in Learning (ICT)",
+            "type": "TP / Lab",
+            "teacher": "Department Faculty",
+            "room": "Lab 5"
+          },
+          {
+            "id": "mon_g2_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Reading Techniques",
+            "type": "TD",
+            "teacher": "Dr. Mouaci",
+            "room": "Room 36"
+          },
+          {
+            "id": "mon_g2_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Child & Adolescent Dev. Psychology",
+            "type": "TD",
+            "teacher": "Prof. Rebouh",
+            "room": "Room 36"
+          },
+          {
+            "id": "mon_g2_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Prof. Messekher",
+            "room": "Room 36"
+          }
+        ],
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "id": "thu_g2_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Djatit",
+            "room": "Room 35"
+          },
+          {
+            "id": "thu_g2_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 3"
+          },
+          {
+            "id": "thu_g2_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 3"
+          },
+          {
+            "id": "thu_g2_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 3"
+          },
+          {
+            "id": "thu_g2_5",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Djatit",
+            "room": "Room 3"
+          }
+        ]
+      }
+    },
+    "g4": {
+      "name": "Group 4 (PEM)",
+      "schedule": {
+        "Saturday": [
+          {
+            "id": "sat_g4_1",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 9"
+          },
+          {
+            "id": "sat_g4_2",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 9"
+          },
+          {
+            "id": "sat_g4_3",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Culture Studies",
+            "type": "TD",
+            "teacher": "Ms. Amara",
+            "room": "Room 9"
+          }
+        ],
+        "Sunday": [
+          {
+            "id": "sun_g4_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          },
+          {
+            "id": "sun_g4_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          },
+          {
+            "id": "sun_g4_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Mrs. Bounab",
+            "room": "Room 10"
+          }
+        ],
+        "Monday": [
+          {
+            "id": "mon_g4_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Child & Adolescent Dev. Psychology",
+            "type": "TD",
+            "teacher": "Prof. Rebouh",
+            "room": "Room 37"
+          },
+          {
+            "id": "mon_g4_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "AI in Learning (ICT)",
+            "type": "TP / Lab",
+            "teacher": "Department Faculty",
+            "room": "Lab 5"
+          },
+          {
+            "id": "mon_g4_3",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Reading Techniques",
+            "type": "TD",
+            "teacher": "Dr. Khelloul",
+            "room": "Room 37"
+          },
+          {
+            "id": "mon_g4_4",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Mr. Laib",
+            "room": "Room 37"
+          }
+        ],
+        "Tuesday": [],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "id": "thu_g4_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g4_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Mr. Laib",
+            "room": "Room 3"
+          },
+          {
+            "id": "thu_g4_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g4_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Tihal",
+            "room": "Room 1"
+          },
+          {
+            "id": "thu_g4_5",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Fellah",
+            "room": "Room 1"
+          }
+        ]
+      }
+    },
+    "g6": {
+      "name": "Group 6 (PEM)",
+      "schedule": {
+        "Saturday": [
+          {
+            "id": "sat_g6_1",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 9"
+          },
+          {
+            "id": "sat_g6_2",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Mrs. Bensaid",
+            "room": "Room 9"
+          },
+          {
+            "id": "sat_g6_3",
+            "time": "16:00 - 17:30",
+            "start": "16:00",
+            "end": "17:30",
+            "subject": "Culture Studies",
+            "type": "TD",
+            "teacher": "Ms. Amara",
+            "room": "Room 9"
+          }
+        ],
+        "Sunday": [],
+        "Monday": [
+          {
+            "id": "mon_g6_1",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Linguistics",
+            "type": "TD",
+            "teacher": "Prof. Messekher",
+            "room": "Room 36"
+          },
+          {
+            "id": "mon_g6_2",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 36"
+          },
+          {
+            "id": "mon_g6_3",
+            "time": "16:00 - 17:30",
+            "start": "16:00",
+            "end": "17:30",
+            "subject": "Listening & Speaking",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 36"
+          }
+        ],
+        "Tuesday": [
+          {
+            "id": "tue_g6_1",
+            "time": "08:30 - 10:00",
+            "start": "08:30",
+            "end": "10:00",
+            "subject": "Child & Adolescent Dev. Psychology",
+            "type": "TD",
+            "teacher": "Prof. Rebouh",
+            "room": "Room 37"
+          },
+          {
+            "id": "tue_g6_2",
+            "time": "10:00 - 11:30",
+            "start": "10:00",
+            "end": "11:30",
+            "subject": "AI in Learning (ICT)",
+            "type": "TP / Lab",
+            "teacher": "Department Faculty",
+            "room": "Lab 4"
+          },
+          {
+            "id": "tue_g6_3",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Reading Techniques",
+            "type": "TD",
+            "teacher": "Dr. Khelloul",
+            "room": "Room 37"
+          },
+          {
+            "id": "tue_g6_4",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Ms. Belaid",
+            "room": "Room 37"
+          },
+          {
+            "id": "tue_g6_5",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Ms. Belaid",
+            "room": "Room 37"
+          },
+          {
+            "id": "tue_g6_6",
+            "time": "16:00 - 17:30",
+            "start": "16:00",
+            "end": "17:30",
+            "subject": "Writing Techniques",
+            "type": "TD",
+            "teacher": "Ms. Belaid",
+            "room": "Room 37"
+          }
+        ],
+        "Wednesday": [],
+        "Thursday": [
+          {
+            "id": "thu_g6_1",
+            "time": "11:30 - 13:00",
+            "start": "11:30",
+            "end": "13:00",
+            "subject": "Phonetics & Phonology",
+            "type": "TD",
+            "teacher": "Mrs. Djatit",
+            "room": "Room 37"
+          },
+          {
+            "id": "thu_g6_2",
+            "time": "13:00 - 14:30",
+            "start": "13:00",
+            "end": "14:30",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 37"
+          },
+          {
+            "id": "thu_g6_3",
+            "time": "14:30 - 16:00",
+            "start": "14:30",
+            "end": "16:00",
+            "subject": "Grammar",
+            "type": "TD",
+            "teacher": "Dr. Boulebnan",
+            "room": "Room 37"
+          }
+        ]
+      }
+    }
+  }
 }
