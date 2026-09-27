@@ -1472,6 +1472,13 @@ button, a, .tab-btn, .chip, .action-tile {
       <div class="menu-nav-row" onclick="switchPage('page-terms')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <div class="menu-row-label">Terms of Use</div>
+        <div class="menu-chevron">&gt;</div>
+      </div>
+      <div class="menu-nav-row" onclick="manualCheckUpdates()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <div class="menu-row-label">Check for Syllabus Updates</div>
+        <div class="menu-chevron">&gt;</div>
+      </div>
     </div>
   </section>
 
@@ -2125,6 +2132,36 @@ async function syncRemoteData() {
     // Offline mode: silently keep using cached data
   }
 }
+
+/* --- MANUAL & LIFECYCLE REFRESH TRIGGERS --- */
+async function manualCheckUpdates() {
+  const t = document.createElement('div');
+  t.style.position = 'fixed';
+  t.style.bottom = '85px';
+  t.style.left = '50%';
+  t.style.transform = 'translateX(-50%)';
+  t.style.background = '#0F4D2A';
+  t.style.color = '#FFFFFF';
+  t.style.padding = '10px 18px';
+  t.style.borderRadius = '20px';
+  t.style.fontSize = '13px';
+  t.style.fontWeight = '700';
+  t.style.boxShadow = '0 4px 14px rgba(0,0,0,0.2)';
+  t.style.zIndex = '99999';
+  t.textContent = 'Checking cloud for updates...';
+  document.body.appendChild(t);
+
+  await syncRemoteData();
+
+  t.textContent = 'Syllabus & courses up to date!';
+  t.style.background = '#166534';
+  setTimeout(() => t.remove(), 2500);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) syncRemoteData();
+});
+window.addEventListener('focus', syncRemoteData);
 
 /* --- INITIAL BOOTSTRAP --- */
 refreshAllViews();
