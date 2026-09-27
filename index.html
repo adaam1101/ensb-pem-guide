@@ -6,6 +6,10 @@
 <meta name="theme-color" content="#0F4D2A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ENSB Guide">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <title>2nd Year English Guide (PEM) - ENSB</title>
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1678,18 +1682,29 @@ input:checked + .switch-slider:before {
       <div class="hero-subtext">Access your syllabus lessons, compute your semester averages, and connect with faculty.</div>
     </div>
 
-    <!-- Native Android APK Download Banner -->
-    <div class="hub-card" style="margin-bottom:16px;background:var(--bg-subtle);border-color:var(--primary);display:flex;align-items:center;justify-content:space-between;gap:12px;">
-      <div style="display:flex;align-items:center;gap:12px;min-width:0">
-        <div style="width:42px;height:42px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </div>
-        <div style="min-width:0">
-          <div style="font-size:14px;font-weight:800;color:var(--text-main)">Install Android App (.apk)</div>
-          <div style="font-size:11px;color:var(--text-muted)">Standalone phone app : 11.4 MB</div>
+    <!-- Native Mobile App Install Card (Android & iOS) -->
+    <div class="hub-card" style="margin-bottom:16px;background:var(--bg-subtle);border-color:var(--primary);padding:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <div style="width:42px;height:42px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <div style="min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text-main)">Install On Your Phone</div>
+            <div style="font-size:11px;color:var(--text-muted)">Native experience for Android &amp; iPhone (iOS)</div>
+          </div>
         </div>
       </div>
-      <a href="ENSB-English-Guide.apk" download="ENSB-English-Guide.apk" class="btn btn-primary btn-sm" style="flex-shrink:0;text-decoration:none">Download APK</a>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <a href="ENSB-English-Guide.apk" download="ENSB-English-Guide.apk" class="btn btn-primary btn-sm" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Android (.apk)
+        </a>
+        <button class="btn btn-outline btn-sm" onclick="openIOSInstallGuide()" style="display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.56.64-1.06 1.71-.93 2.74 1.01.08 2.04-.5 2.66-1.24z"/></svg>
+          iPhone (iOS)
+        </button>
+      </div>
     </div>
 
         <!-- Today's Live Timetable Widget -->
@@ -1873,7 +1888,12 @@ input:checked + .switch-slider:before {
 
     <!-- Navigation Menu Items -->
     <div class="hub-card menu-list-card">
-            <div class="menu-nav-row" onclick="switchPage('page-teachers')">
+      <div class="menu-nav-row" onclick="openIOSInstallGuide()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.56.64-1.06 1.71-.93 2.74 1.01.08 2.04-.5 2.66-1.24z"/></svg>
+        <div class="menu-row-label">Install on iPhone (iOS Guide)</div>
+        <div class="menu-chevron">&gt;</div>
+      </div>
+      <div class="menu-nav-row" onclick="switchPage('page-teachers')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <div class="menu-row-label">Faculty &amp; Teachers Directory</div>
         <div class="menu-chevron">&gt;</div>
@@ -2972,6 +2992,57 @@ function switchPage(pageId) {
 }
 
 /* --- MODAL UTILITIES --- */
+
+/* --- IOS PWA INSTALLATION GUIDE --- */
+function openIOSInstallGuide() {
+  openModal(`
+    <div style="text-align:center;padding:6px 2px">
+      <div style="width:58px;height:58px;border-radius:14px;background:#0F4D2A;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(15,77,42,0.3)">
+        <img src="apple-touch-icon.png" style="width:46px;height:46px;border-radius:10px;object-fit:cover" alt="ENSB">
+      </div>
+      <h3 style="font-size:18px;font-weight:800;color:var(--text-main);margin-bottom:4px">Install on iPhone &amp; iPad</h3>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">Add the app directly to your iOS Home Screen in 3 quick steps:</p>
+
+      <div style="display:flex;flex-direction:column;gap:12px;text-align:left;margin-bottom:20px">
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg-subtle);padding:12px 14px;border-radius:12px;border:1px solid var(--border)">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#FFF;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.4">
+            In <strong>Safari</strong> on your iPhone, tap the <strong>Share</strong> button at the bottom:
+            <div style="display:inline-flex;align-items:center;gap:4px;background:var(--border);color:var(--text-main);padding:2px 8px;border-radius:6px;font-weight:700;margin-top:4px">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+              Share (Square with arrow)
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg-subtle);padding:12px 14px;border-radius:12px;border:1px solid var(--border)">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#FFF;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.4">
+            Scroll down the menu and tap <strong>"Add to Home Screen"</strong>:
+            <div style="display:inline-flex;align-items:center;gap:4px;background:var(--border);color:var(--text-main);padding:2px 8px;border-radius:6px;font-weight:700;margin-top:4px">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Add to Home Screen
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;background:var(--bg-subtle);padding:12px 14px;border-radius:12px;border:1px solid var(--border)">
+          <div style="width:26px;height:26px;border-radius:50%;background:var(--primary);color:#FFF;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.4">
+            Tap <strong>"Add"</strong> in the top-right corner. The official ENSB Guide app icon will appear right on your iPhone home screen!
+          </div>
+        </div>
+      </div>
+
+      <div style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--primary);margin-bottom:16px;text-align:left">
+        ✨ <strong>Native iOS Experience:</strong> Launches in full-screen standalone mode with no browser address bar, complete timetable alerts, and offline access!
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="closeModal()">Got it</button>
+    </div>
+  `);
+}
+
 function openModal(html) {
   document.getElementById('appModalContent').innerHTML = html;
   document.getElementById('appModal').classList.add('open');
