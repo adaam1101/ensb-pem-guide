@@ -327,32 +327,27 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({"success": True, "message": "Password updated"})
             return
 
-        # 4. API: Register Student (Direct student submission)
+        # 4. API: Register or Update Student
         if clean_path == "/api/register-student":
             full_name = str(data.get("fullName", "")).strip()
             email = str(data.get("email", "")).strip().lower()
             wilaya = str(data.get("wilaya", "")).strip()
-            group = str(data.get("group", "Groupe 05")).strip()
+            group = str(data.get("group", "Group 05")).strip()
             phone = str(data.get("phone", "")).strip()
+            matricule = str(data.get("matricule", "")).strip()
+            student_id = str(data.get("id", "")).strip()
 
             if not full_name or len(full_name) < 2 or len(full_name) > 100:
                 self._send_json({"error": "Please enter a valid full name (2 to 100 characters)."}, 400)
                 return
 
-            if not email or "@" not in email or "." not in email:
-                self._send_json({"error": "Please provide a valid email address."}, 400)
-                return
-
-            if not wilaya:
-                self._send_json({"error": "Please select your Wilaya."}, 400)
-                return
-
             try:
                 clean_name = html.escape(full_name)
-                clean_email = html.escape(email)
-                clean_wilaya = html.escape(wilaya)
+                clean_email = html.escape(email) if email else ""
+                clean_wilaya = html.escape(wilaya) if wilaya else ""
                 clean_group = html.escape(group) if group else "Group 05"
-                clean_phone = html.escape(phone)
+                clean_phone = html.escape(phone) if phone else ""
+                clean_matricule = html.escape(matricule) if matricule else ""
 
                 with open(DATA_FILE, "r", encoding="utf-8") as f:
                     db = json.load(f)
@@ -360,28 +355,41 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 if "students" not in db:
                     db["students"] = []
 
-                # Find if student with same email or same exact name already exists
+                # Find if student with same ID, matricule, email, or exact name exists
                 existing_idx = None
                 for idx, s in enumerate(db["students"]):
-                    if s.get("email", "").lower() == clean_email or s.get("fullName", "").lower() == clean_name.lower():
+                    if student_id and s.get("id") == student_id:
+                        existing_idx = idx
+                        break
+                    if clean_matricule and s.get("matricule") == clean_matricule:
+                        existing_idx = idx
+                        break
+                    if clean_email and s.get("email", "").lower() == clean_email:
+                        existing_idx = idx
+                        break
+                    if s.get("fullName", "").lower() == clean_name.lower():
                         existing_idx = idx
                         break
 
                 now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                 if existing_idx is not None:
                     db["students"][existing_idx]["fullName"] = clean_name
-                    db["students"][existing_idx]["email"] = clean_email
+                    if clean_email:
+                        db["students"][existing_idx]["email"] = clean_email
                     db["students"][existing_idx]["wilaya"] = clean_wilaya
                     db["students"][existing_idx]["group"] = clean_group
+                    if clean_matricule:
+                        db["students"][existing_idx]["matricule"] = clean_matricule
                     if clean_phone:
                         db["students"][existing_idx]["phone"] = clean_phone
                     db["students"][existing_idx]["updatedAt"] = now_iso
                     student_obj = db["students"][existing_idx]
-                    action_msg = "Your information has been updated successfully!"
+                    action_msg = "Information updated successfully!"
                 else:
-                    new_id = f"std_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+                    new_id = student_id if student_id else f"std_{int(time.time())}_{uuid.uuid4().hex[:6]}"
                     student_obj = {
                         "id": new_id,
+                        "matricule": clean_matricule,
                         "fullName": clean_name,
                         "email": clean_email,
                         "wilaya": clean_wilaya,
@@ -390,7 +398,7 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                         "registeredAt": now_iso
                     }
                     db["students"].append(student_obj)
-                    action_msg = "Your registration has been submitted successfully!"
+                    action_msg = "Registration submitted successfully!"
 
                 # Sort alphabetically by full name
                 db["students"].sort(key=lambda x: x.get("fullName", "").lower())
