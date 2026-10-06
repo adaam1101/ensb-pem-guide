@@ -405,6 +405,20 @@ body {
   align-items: center;
   gap: 12px;
 }
+.student-meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.student-headline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  row-gap: 4px;
+}
 .avatar-badge {
   width: 36px;
   height: 36px;
@@ -420,13 +434,26 @@ body {
   border: 1px solid rgba(15, 77, 42, 0.2);
 }
 .student-name {
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
   font-size: 14px;
+  line-height: 1.3;
+}
+.matricule-badge {
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
 }
 .student-sub {
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 .email-link {
   color: var(--primary);
@@ -435,25 +462,6 @@ body {
 }
 .email-link:hover {
   text-decoration: underline;
-}
-.wilaya-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-card-subtle);
-  color: var(--text-main);
-  font-weight: 700;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-}
-.wilaya-code {
-  background: var(--primary);
-  color: #FFFFFF;
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
 }
 .group-tag {
   font-size: 11px;
@@ -496,8 +504,7 @@ body {
   .roster-table th { background: #EEEEEE !important; color: #000000 !important; border: 1px solid #000000 !important; }
   .roster-table td { border: 1px solid #CCCCCC !important; color: #000000 !important; }
   .avatar-badge { display: none !important; }
-  .wilaya-badge { border: none !important; background: none !important; }
-  .wilaya-code { background: #333333 !important; color: #FFFFFF !important; }
+  .wilaya-pill { border: none !important; background: none !important; padding: 0 !important; font-weight: 700 !important; color: #000000 !important; }
   .email-link { color: #000000 !important; text-decoration: none !important; }
 }
 
@@ -507,6 +514,13 @@ body {
   .letterhead-top { justify-content: center; text-align: center; }
   .toolbar-banner { flex-direction: column; align-items: stretch; }
   .card-header-bar { flex-direction: column; align-items: stretch; }
+  .student-headline { flex-wrap: wrap; gap: 6px; }
+  .wilaya-pill {
+    padding: 2.5px 20px 2.5px 8px;
+    font-size: 11px;
+    min-height: 25px;
+    max-width: 155px;
+  }
 }
 
 .btn-del {
@@ -524,30 +538,78 @@ body {
   border-color: #FCA5A5;
 }
 
-.wilaya-select-direct {
-  padding: 6px 10px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  background: var(--bg-card);
-  color: var(--text-main);
-  font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  outline: none;
-  cursor: pointer;
-  max-width: 180px;
-  width: 100%;
-  transition: all 0.2s ease;
+/* Wilaya Pill beside Student Name */
+.wilaya-pill-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
 }
-.wilaya-select-direct:focus {
+.wilaya-pill {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 2.5px 22px 2.5px 9px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: inherit;
+  line-height: 1.35;
+  cursor: pointer;
+  outline: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background-repeat: no-repeat;
+  background-position: calc(100% - 6px) center;
+  background-size: 9px;
+  max-width: 175px;
+  white-space: nowrap;
+}
+
+/* Assigned Wilaya Pill */
+.wilaya-pill.assigned {
+  background-color: #ECFDF5;
+  border: 1.5px solid #A7F3D0;
+  color: #065F46;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23059669' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+.wilaya-pill.assigned:hover {
+  background-color: #D1FAE5;
+  border-color: #6EE7B7;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.15);
+}
+
+/* Unassigned Wilaya Pill */
+.wilaya-pill.unassigned {
+  background-color: var(--bg-card-subtle);
+  border: 1.5px dashed var(--border);
+  color: var(--text-muted);
+  font-weight: 600;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+.wilaya-pill.unassigned:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: #F0FDF4;
+  border-style: solid;
+  transform: translateY(-1px);
+}
+.wilaya-pill:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
-.wilaya-select-direct.assigned {
-  border-color: var(--primary);
-  background: var(--bg-card-subtle);
-  color: var(--primary);
-  font-weight: 700;
+
+[data-theme="dark"] .wilaya-pill.assigned {
+  background-color: rgba(6, 95, 70, 0.35);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6EE7B7;
+}
+[data-theme="dark"] .wilaya-pill.unassigned {
+  background-color: rgba(30, 41, 59, 0.6);
+  border-color: #334155;
+  color: #94A3B8;
 }
 
 .modal-overlay {
@@ -736,9 +798,8 @@ body {
         <thead>
           <tr>
             <th style="width: 44px; text-align: center;">No.</th>
-            <th>Full Name</th>
+            <th>Student Name &amp; Wilaya</th>
             <th>Email Address</th>
-            <th>Wilaya</th>
             <th>Group</th>
             <th>Phone Number</th>
             <th>Date Registered</th>
@@ -1078,20 +1139,19 @@ function renderTable() {
       ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
       : nameParts[0].slice(0, 2).toUpperCase();
 
+    const isAssigned = Boolean(s.wilaya && s.wilaya.trim());
+    const selectClass = isAssigned ? 'wilaya-pill assigned' : 'wilaya-pill unassigned';
+
     const wilayaOpts = ALGERIAN_WILAYAS.map(w => 
-      `<option value="${w}" ${s.wilaya === w ? 'selected' : ''}>${w}</option>`
+      `<option value="${w}" ${s.wilaya === w ? 'selected' : ''}>📍 ${w}</option>`
     ).join('');
 
-    const isAssigned = Boolean(s.wilaya && s.wilaya.trim());
-    const selectClass = isAssigned ? 'wilaya-select-direct assigned' : 'wilaya-select-direct';
-
-    const wilayaBadge = `
-      <div style="display:inline-flex;align-items:center;gap:6px;">
-        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id)}', this.value)">
-          <option value="">📍 Select Wilaya...</option>
+    const wilayaPillHTML = `
+      <div class="wilaya-pill-wrapper">
+        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id)}', this.value)" title="Click to assign or change Wilaya for ${escapeHTML(s.fullName)}">
+          <option value="">📍 Set Wilaya...</option>
           ${wilayaOpts}
         </select>
-        ${isAssigned ? '<span style="color:var(--primary);font-size:14px;font-weight:bold;" title="Wilaya set">✓</span>' : ''}
       </div>
     `;
 
@@ -1103,16 +1163,19 @@ function renderTable() {
       } catch(e) {}
     }
 
-    const matHTML = s.matricule ? `<span style="font-weight:700;color:var(--primary);">ID: ${escapeHTML(s.matricule)}</span> • ` : '';
+    const matHTML = s.matricule ? `<span class="matricule-badge">ID: ${escapeHTML(s.matricule)}</span> • ` : '';
 
     tr.innerHTML = `
       <td style="text-align:center; font-weight:700; color:var(--text-light);">${idx + 1}</td>
       <td>
         <div class="student-name-cell">
           <div class="avatar-badge">${escapeHTML(initials)}</div>
-          <div>
-            <div class="student-name">${escapeHTML(s.fullName)}</div>
-            <div class="student-sub">${matHTML}2nd Year PEM (G05)</div>
+          <div class="student-meta-col">
+            <div class="student-headline">
+              <span class="student-name">${escapeHTML(s.fullName)}</span>
+              ${wilayaPillHTML}
+            </div>
+            <div class="student-sub">${matHTML}<span>2nd Year PEM (G05)</span></div>
           </div>
         </div>
       </td>
@@ -1120,9 +1183,6 @@ function renderTable() {
         <a href="mailto:${escapeHTML(s.email)}" class="email-link">
           ✉️ ${escapeHTML(s.email)}
         </a>
-      </td>
-      <td>
-        ${wilayaBadge}
       </td>
       <td>
         <span class="group-tag">${escapeHTML(s.group || 'Group 05')}</span>
