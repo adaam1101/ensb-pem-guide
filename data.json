@@ -1122,33 +1122,5 @@
       }
     }
   },
-  "students": [
-    {
-      "id": "std_1791267101_e5607b",
-      "fullName": "adam ameyoud",
-      "email": "adaam9054@gmail.com",
-      "wilaya": "23 - Annaba",
-      "group": "Group 05",
-      "phone": "",
-      "registeredAt": "2026-10-06T06:11:41Z"
-    },
-    {
-      "id": "std_01",
-      "fullName": "Adem Ameyoud",
-      "email": "adam.ameyoud@ensb.dz",
-      "wilaya": "16 - Alger",
-      "group": "Group 05",
-      "phone": "+213795523399",
-      "registeredAt": "2026-10-05T12:00:00Z"
-    },
-    {
-      "id": "std_1791238309_a9dbc2",
-      "fullName": "Sarah Belkacem",
-      "email": "sarah.belkacem@ensb.dz",
-      "wilaya": "09 - Blida",
-      "group": "Group 05",
-      "phone": "0555123456",
-      "registeredAt": "2026-10-05T22:11:49Z"
-    }
-  ]
+  "students": []
 }

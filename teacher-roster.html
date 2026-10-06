@@ -947,13 +947,19 @@ async function fetchTeacherStudents(showToastMsg = false) {
   try {
     localStudents = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
     if (!Array.isArray(localStudents)) localStudents = [];
+    // Auto purge legacy test entries
+    localStudents = localStudents.filter(s => {
+      const em = (s.email || '').toLowerCase().trim();
+      return em !== 'sarah.belkacem@ensb.dz' && em !== 'adaam9054@gmail.com';
+    });
+    localStorage.setItem('ensb_registered_students', JSON.stringify(localStudents));
   } catch(e) {}
 
   // Merge map by email or name
   const map = new Map();
   fetchedList.forEach(s => {
     const key = (s.email || s.fullName || '').toLowerCase().trim();
-    if (key) map.set(key, s);
+    if (key && key !== 'sarah.belkacem@ensb.dz' && key !== 'adaam9054@gmail.com') map.set(key, s);
   });
 
   localStudents.forEach(s => {
@@ -967,7 +973,23 @@ async function fetchTeacherStudents(showToastMsg = false) {
     }
   });
 
-  allStudents = Array.from(map.values());
+  // 6. Exclude any students on the permanent deleted blacklist
+  let deletedBlacklist = [];
+  try {
+    deletedBlacklist = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
+    if (!Array.isArray(deletedBlacklist)) deletedBlacklist = [];
+  } catch(e) {}
+
+  allStudents = Array.from(map.values()).filter(s => {
+    const sId = (s.id || '').trim();
+    const sEmail = (s.email || '').toLowerCase().trim();
+    const sName = (s.fullName || '').toLowerCase().trim();
+    if (sId && deletedBlacklist.includes(sId)) return false;
+    if (sEmail && deletedBlacklist.includes(sEmail)) return false;
+    if (sName && deletedBlacklist.includes(sName)) return false;
+    return true;
+  });
+
   renderTable();
 
   if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
@@ -1146,19 +1168,48 @@ async function deleteStudentRecord(id) {
   const name = std ? std.fullName : 'this student';
   if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
 
-  allStudents = allStudents.filter(s => s.id !== id);
+  // 1. Add to permanent deleted blacklist so it NEVER reappears on refresh
+  try {
+    let deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
+    if (!Array.isArray(deletedList)) deletedList = [];
+    if (id && !deletedList.includes(id)) deletedList.push(id);
+    if (std && std.email) {
+      const em = std.email.toLowerCase().trim();
+      if (!deletedList.includes(em)) deletedList.push(em);
+    }
+    if (std && std.fullName) {
+      const nm = std.fullName.toLowerCase().trim();
+      if (!deletedList.includes(nm)) deletedList.push(nm);
+    }
+    localStorage.setItem('ensb_deleted_students', JSON.stringify(deletedList));
+  } catch(err) {}
 
-  // Remove from localStorage
+  // 2. Remove from active localStorage registrations
   try {
     let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
     if (Array.isArray(localList)) {
-      localList = localList.filter(s => s.id !== id);
+      localList = localList.filter(s => {
+        if (s.id === id) return false;
+        if (std && std.email && s.email && s.email.toLowerCase() === std.email.toLowerCase()) return false;
+        if (std && std.fullName && s.fullName && s.fullName.toLowerCase() === std.fullName.toLowerCase()) return false;
+        return true;
+      });
       localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
     }
   } catch(err) {}
 
+  // 3. Attempt server deletion (works if server.py is running)
+  try {
+    await fetch('/api/delete-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Teacher-Key': activeKey },
+      body: JSON.stringify({ key: activeKey, id: id, email: std?.email || '' })
+    });
+  } catch(err) {}
+
+  allStudents = allStudents.filter(s => s.id !== id);
   renderTable();
-  showToast(`🗑️ ${name} removed from roster.`);
+  showToast(`🗑️ ${name} permanently removed from roster.`);
 }
 
 // CLOUD SYNC CONFIGURATION

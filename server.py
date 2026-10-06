@@ -408,26 +408,34 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json({"error": "Server error: " + str(e)}, 500)
             return
 
-        # 5. API: Delete Student (Admin only)
+        # 5. API: Delete Student (Admin or Teacher Key)
         if clean_path == "/api/delete-student":
             pw = str(data.get("password", ""))
-            input_hash = compute_hash(pw)
-            admin_hash = get_admin_hash()
+            teacher_key = str(data.get("key", "") or self.headers.get("X-Teacher-Key", "")).strip()
+            is_admin = hmac.compare_digest(compute_hash(pw), get_admin_hash())
+            is_teacher = (teacher_key == TEACHER_KEY)
 
-            if not hmac.compare_digest(input_hash, admin_hash):
+            if not is_admin and not is_teacher:
                 self._send_json({"error": "Unauthorized: Access denied"}, 401)
                 return
 
             student_id = str(data.get("id", "")).strip()
-            if not student_id:
-                self._send_json({"error": "Missing student ID"}, 400)
+            student_email = str(data.get("email", "")).strip().lower()
+            if not student_id and not student_email:
+                self._send_json({"error": "Missing student ID or email"}, 400)
                 return
 
             try:
                 with open(DATA_FILE, "r", encoding="utf-8") as f:
                     db = json.load(f)
 
-                db["students"] = [s for s in db.get("students", []) if s.get("id") != student_id]
+                if "students" not in db:
+                    db["students"] = []
+
+                db["students"] = [
+                    s for s in db.get("students", []) 
+                    if s.get("id") != student_id and (not student_email or s.get("email", "").lower() != student_email)
+                ]
 
                 with open(DATA_FILE, "w", encoding="utf-8") as f:
                     json.dump(db, f, indent=2, ensure_ascii=False)
