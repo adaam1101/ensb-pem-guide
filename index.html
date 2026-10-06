@@ -1710,6 +1710,24 @@ input:checked + .switch-slider:before {
         <!-- Today's Live Timetable Widget -->
     <div id="homeScheduleWidget"></div>
 
+    <!-- Student Registration Feature Card -->
+    <div class="hub-card" style="margin-bottom:16px;background:var(--bg-subtle);border-left:4px solid var(--primary);padding:14px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+          </div>
+          <div style="min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--text-main)">Fiche de Renseignements (Groupe 05)</div>
+            <div style="font-size:11px;color:var(--text-muted)">Nom, Email &amp; Wilaya pour la liste de l'enseignante</div>
+          </div>
+        </div>
+        <div>
+          <a href="register.html" class="btn btn-primary btn-sm" style="text-decoration:none;font-size:12px;display:inline-flex;align-items:center;gap:6px">✍️ Remplir ma fiche</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Quick Action Launchpad -->
     <div class="section-header" style="margin-top:0">
       <div class="section-title">Quick Actions</div>
@@ -1737,12 +1755,12 @@ input:checked + .switch-slider:before {
         <div class="tile-label">GPA Meter</div>
         <div class="tile-sub">Grade calculator</div>
       </div>
-      <div class="action-tile" onclick="switchPage('page-teachers')">
-        <div class="tile-icon-box purple">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div class="action-tile" onclick="window.location.href='register.html'">
+        <div class="tile-icon-box green" style="background:#DCFCE7;color:#166534;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
         </div>
-        <div class="tile-label">Faculty</div>
-        <div class="tile-sub">Teacher directory</div>
+        <div class="tile-label">Inscription</div>
+        <div class="tile-sub">Fiche Groupe 5</div>
       </div>
     </div>
 
@@ -1888,6 +1906,11 @@ input:checked + .switch-slider:before {
 
     <!-- Navigation Menu Items -->
     <div class="hub-card menu-list-card">
+      <div class="menu-nav-row" onclick="window.location.href='register.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+        <div class="menu-row-label">Fiche de Renseignements Étudiant (Groupe 05)</div>
+        <div class="menu-chevron">&gt;</div>
+      </div>
       <div class="menu-nav-row" onclick="openIOSInstallGuide()">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.65 1.35-.56.64-1.06 1.71-.93 2.74 1.01.08 2.04-.5 2.66-1.24z"/></svg>
         <div class="menu-row-label">Install on iPhone (iOS Guide)</div>

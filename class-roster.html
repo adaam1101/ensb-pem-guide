@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecting...</title>
+<script>
+const params = new URLSearchParams(window.location.search);
+const key = params.get('key');
+if (key === 'ensb2026' || params.get('view') === 'teacher') {
+  window.location.replace('teacher-roster.html' + (key ? '?key=' + key : ''));
+} else {
+  window.location.replace('register.html');
+}
+</script>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding-top:60px; color:#475569;">
+  <p>Redirecting to the <a href="register.html" style="color:#0F4D2A; font-weight:bold;">Student Registration Form</a>...</p>
+</body>
+</html>

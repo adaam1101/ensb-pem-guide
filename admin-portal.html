@@ -617,6 +617,10 @@ input, select, textarea, button {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Faculty Directory
     </button>
+    <button class="nav-tab-btn" data-tab="tab-students" onclick="setTab('tab-students')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+      Class Roster (<span id="statStudentCountNav">0</span>)
+    </button>
   </nav>
 
   <!-- Portal Content -->
@@ -659,6 +663,15 @@ input, select, textarea, button {
           <div>
             <div class="stat-val" id="statTeacherCount">0</div>
             <div class="stat-label">Teachers Registered</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+          </div>
+          <div>
+            <div class="stat-val" id="statStudentCount">0</div>
+            <div class="stat-label">Students in Roster</div>
           </div>
         </div>
       </div>
@@ -718,6 +731,28 @@ input, select, textarea, button {
       <div id="teachersList"></div>
     </section>
 
+    <!-- TAB 5: STUDENTS & CLASS ROSTER -->
+    <section class="admin-section" id="tab-students">
+      <div class="section-head-bar">
+        <div>
+          <div class="section-head-title">Group 05 Class Roster &amp; Students</div>
+          <div style="font-size:13px;color:var(--text-muted)">Manage registered students, export to Excel, and copy student/teacher links.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="copyPortalStudentLink()">🔗 Copier Lien Inscription</button>
+          <button class="btn btn-outline" onclick="copyPortalTeacherLink()">👩‍🏫 Copier Lien Enseignant</button>
+          <a href="/api/export-students-csv?key=ensb2026" class="btn btn-outline" style="text-decoration:none">📥 Export Excel (.csv)</a>
+          <button class="btn btn-primary" onclick="openNewStudentModal()">+ Ajouter un Étudiant</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px;display:flex;gap:10px;">
+        <input type="text" id="adminStudentSearch" class="form-input" placeholder="🔍 Rechercher par nom, email ou wilaya..." oninput="renderAdminStudents()" style="max-width:360px">
+      </div>
+
+      <div id="adminStudentsList"></div>
+    </section>
+
   </main>
 </div>
 
@@ -738,8 +773,24 @@ input, select, textarea, button {
 let currentData = {
   modules: [],
   announcements: [],
-  teachers: []
+  teachers: [],
+  students: []
 };
+
+const ALGERIAN_WILAYAS = [
+  "01 - Adrar", "02 - Chlef", "03 - Laghouat", "04 - Oum El Bouaghi", "05 - Batna",
+  "06 - Béjaïa", "07 - Biskra", "08 - Béchar", "09 - Blida", "10 - Bouira",
+  "11 - Tamanrasset", "12 - Tébessa", "13 - Tlemcen", "14 - Tiaret", "15 - Tizi Ouzou",
+  "16 - Alger", "17 - Djelfa", "18 - Jijel", "19 - Sétif", "20 - Saïda",
+  "21 - Skikda", "22 - Sidi Bel Abbès", "23 - Annaba", "24 - Guelma", "25 - Constantine",
+  "26 - Médéa", "27 - Mostaganem", "28 - M'Sila", "29 - Mascara", "30 - Ouargla",
+  "31 - Oran", "32 - El Bayadh", "33 - Illizi", "34 - Bordj Bou Arréridj", "35 - Boumerdès",
+  "36 - El Tarf", "37 - Tindouf", "38 - Tissemsilt", "39 - El Oued", "40 - Khenchela",
+  "41 - Souk Ahras", "42 - Tipaza", "43 - Mila", "44 - Aïn Defla", "45 - Naâma",
+  "46 - Aïn Témouchent", "47 - Ghardaïa", "48 - Relizane", "49 - Timimoun", "50 - Bordj Badji Mokhtar",
+  "51 - Ouled Djellal", "52 - Béni Abbès", "53 - In Salah", "54 - In Guezzam", "55 - Touggourt",
+  "56 - Djanet", "57 - El M'Ghair", "58 - El Meniaa"
+];
 
 /* ==========================================================================
    ENTERPRISE CRYPTOGRAPHIC SECURITY & ANTI-PENTEST DEFENSES
@@ -906,6 +957,7 @@ async function loadInitialData() {
     if (!currentData.modules) currentData.modules = [];
     if (!currentData.announcements) currentData.announcements = [];
     if (!currentData.teachers) currentData.teachers = [];
+    if (!currentData.students) currentData.students = [];
     renderAll();
   } catch(e) {
     showToast('Failed to load data from server.');
@@ -1150,6 +1202,7 @@ function renderAll() {
   renderModuleFolders();
   renderAnnouncements();
   renderTeachers();
+  renderAdminStudents();
 }
 
 function renderStats() {
@@ -1162,6 +1215,188 @@ function renderStats() {
   document.getElementById('statLessonCount').textContent = lessonCount;
   document.getElementById('statAnnCount').textContent = currentData.announcements.length;
   document.getElementById('statTeacherCount').textContent = currentData.teachers.length;
+
+  const stdCount = (currentData.students || []).length;
+  const statStd = document.getElementById('statStudentCount');
+  if (statStd) statStd.textContent = stdCount;
+  const navStd = document.getElementById('statStudentCountNav');
+  if (navStd) navStd.textContent = stdCount;
+}
+
+/* ==========================================================================
+   CLASS ROSTER & STUDENTS MANAGEMENT
+   ========================================================================== */
+function renderAdminStudents() {
+  const container = document.getElementById('adminStudentsList');
+  if (!container) return;
+
+  const search = (document.getElementById('adminStudentSearch')?.value || '').toLowerCase().trim();
+  const students = (currentData.students || []).filter(s => {
+    if (!search) return true;
+    return (s.fullName || '').toLowerCase().includes(search) ||
+           (s.email || '').toLowerCase().includes(search) ||
+           (s.wilaya || '').toLowerCase().includes(search);
+  });
+
+  if (students.length === 0) {
+    container.innerHTML = `
+      <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;text-align:center;color:var(--text-muted)">
+        <div style="font-size:36px;margin-bottom:8px">👥</div>
+        <div style="font-size:16px;font-weight:700">Aucun étudiant dans la liste</div>
+        <div style="font-size:13px;margin-top:4px">Partagez le lien d'inscription aux camarades ou ajoutez un étudiant manuellement.</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="copyPortalStudentLink()">🔗 Copier Lien Inscription</button>
+          <button class="btn btn-outline" onclick="openNewStudentModal()">+ Ajouter Étudiant Manuellement</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+    <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left">
+          <thead>
+            <tr style="background:var(--bg-subtle);border-bottom:2px solid var(--border)">
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted);width:40px">N°</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Nom &amp; Prénom</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Email</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Wilaya</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Groupe</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Téléphone</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted);text-align:right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+  students.forEach((s, idx) => {
+    html += `
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:12px 16px;color:var(--text-light);font-weight:700">${idx + 1}</td>
+        <td style="padding:12px 16px;font-weight:700;color:var(--text-main)">${escapeHTML(s.fullName)}</td>
+        <td style="padding:12px 16px"><a href="mailto:${escapeHTML(s.email)}" style="color:var(--primary);text-decoration:none;font-weight:600">✉️ ${escapeHTML(s.email)}</a></td>
+        <td style="padding:12px 16px"><span style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-weight:700;font-size:12px">📍 ${escapeHTML(s.wilaya)}</span></td>
+        <td style="padding:12px 16px"><span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${escapeHTML(s.group || 'Groupe 05')}</span></td>
+        <td style="padding:12px 16px;color:var(--text-muted)">${escapeHTML(s.phone || '—')}</td>
+        <td style="padding:12px 16px;text-align:right">
+          <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;color:var(--danger);border-color:var(--danger-border);background:var(--danger-bg)" onclick="deleteAdminStudent('${s.id}')">Supprimer</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  container.innerHTML = html;
+}
+
+function copyPortalStudentLink() {
+  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'register.html';
+  navigator.clipboard.writeText(url).then(() => showToast('🔗 Lien d\'inscription pour les étudiants copié !'));
+}
+
+function copyPortalTeacherLink() {
+  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'teacher-roster.html?key=ensb2026';
+  navigator.clipboard.writeText(url).then(() => showToast('👩‍🏫 Lien de consultation pour l\'enseignante copié ! (Clé incluse)'));
+}
+
+function openNewStudentModal() {
+  const modal = document.getElementById('modalWindowContent');
+  modal.innerHTML = `
+    <div style="font-size:17px;font-weight:800;margin-bottom:14px">Ajouter un étudiant au Groupe 05</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label class="form-label">Nom et Prénom *</label>
+        <input type="text" id="newStdName" class="form-input" placeholder="ex: Sarah Belkacem">
+      </div>
+      <div>
+        <label class="form-label">Email *</label>
+        <input type="email" id="newStdEmail" class="form-input" placeholder="ex: sarah.belkacem@ensb.dz">
+      </div>
+      <div>
+        <label class="form-label">Wilaya *</label>
+        <select id="newStdWilaya" class="form-input">
+          <option value="">Sélectionnez la Wilaya...</option>
+          ${ALGERIAN_WILAYAS.map(w => `<option value="${w}">${w}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Groupe</label>
+        <input type="text" id="newStdGroup" class="form-input" value="Groupe 05">
+      </div>
+      <div>
+        <label class="form-label">Téléphone / WhatsApp</label>
+        <input type="tel" id="newStdPhone" class="form-input" placeholder="ex: 0555 12 34 56">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveNewStudent()">Ajouter</button>
+    </div>
+  `;
+  document.getElementById('portalModal').style.display = 'flex';
+}
+
+async function saveNewStudent() {
+  const fullName = document.getElementById('newStdName').value.trim();
+  const email = document.getElementById('newStdEmail').value.trim().toLowerCase();
+  const wilaya = document.getElementById('newStdWilaya').value.trim();
+  const group = document.getElementById('newStdGroup').value.trim() || 'Groupe 05';
+  const phone = document.getElementById('newStdPhone').value.trim();
+
+  if (!fullName || !email || !wilaya) {
+    alert('Veuillez renseigner le nom, l\'email et la wilaya.');
+    return;
+  }
+
+  const studentObj = {
+    id: 'std_' + Date.now(),
+    fullName,
+    email,
+    wilaya,
+    group,
+    phone,
+    registeredAt: new Date().toISOString()
+  };
+
+  if (!currentData.students) currentData.students = [];
+  currentData.students.push(studentObj);
+  currentData.students.sort((a,b) => (a.fullName || '').localeCompare(b.fullName || ''));
+
+  closeModal();
+  renderAll();
+  showToast('Étudiant ajouté ! Synchronisez avec le serveur pour sauvegarder.');
+}
+
+async function deleteAdminStudent(id) {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer cet étudiant de la liste ?')) return;
+
+  if (currentPassword) {
+    try {
+      const res = await fetch('/api/delete-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: currentPassword, id })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        currentData.students = currentData.students.filter(s => s.id !== id);
+        renderAll();
+        showToast('Étudiant supprimé avec succès !');
+        return;
+      }
+    } catch(e) {}
+  }
+
+  currentData.students = currentData.students.filter(s => s.id !== id);
+  renderAll();
+  showToast('Étudiant retiré de la liste.');
 }
 
 /* ==========================================================================

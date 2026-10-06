@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Portal — Official Class Roster | Group 05 | ENS Bouzareah</title>
+<link rel="icon" type="image/webp" href="logo.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary: #0F4D2A;
+  --primary-hover: #166534;
+  --primary-light: #E8F5E9;
+  --primary-glow: rgba(15, 77, 42, 0.15);
+  --accent: #22C55E;
+
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-card-subtle: #F1F5F9;
+  --bg-input: #F8FAFC;
+
+  --text-main: #0F172A;
+  --text-muted: #475569;
+  --text-light: #94A3B8;
+
+  --border: #E2E8F0;
+  --border-focus: #166534;
+
+  --danger: #DC2626;
+  --danger-bg: #FEF2F2;
+  --success: #166534;
+  --success-bg: #F0FDF4;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  --bg-page: #0B0F19;
+  --bg-card: #131B2E;
+  --bg-card-subtle: #1E293B;
+  --bg-input: #0F172A;
+
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-light: #64748B;
+
+  --border: #243048;
+  --border-focus: #22C55E;
+  --primary-light: rgba(34, 197, 94, 0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding-bottom: 60px;
+}
+
+/* Header & Official Academic Letterhead */
+.header-wrapper {
+  background: linear-gradient(135deg, #051A0E 0%, #0F4D2A 100%);
+  color: #FFFFFF;
+  padding: 30px 20px 22px;
+  border-bottom: 3px solid #22C55E;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.letterhead-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding-bottom: 12px;
+}
+.republic-text {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 700;
+  color: #86EFAC;
+}
+.portal-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.badge-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255,255,255,0.15);
+  color: #FFFFFF;
+}
+.badge-pill.active-pill {
+  background: #22C55E;
+  color: #051A0E;
+}
+
+.school-branding {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.school-logo {
+  width: 62px;
+  height: 62px;
+  border-radius: 14px;
+  background: #FFFFFF;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.branding-text h1 {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.branding-text p {
+  font-size: 13px;
+  color: #D1D5DB;
+  margin-top: 3px;
+}
+
+/* Container */
+.main-container {
+  max-width: 1100px;
+  margin: 24px auto 0;
+  padding: 0 20px;
+}
+
+/* Access Shield Screen */
+.access-shield-container {
+  max-width: 460px;
+  margin: 60px auto 0;
+  padding: 0 16px;
+  text-align: center;
+}
+.shield-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 34px 28px;
+  box-shadow: var(--shadow-lg);
+}
+.shield-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 16px;
+}
+.shield-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.shield-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+.key-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  margin-bottom: 12px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.key-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+/* Metric KPI Cards */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.metric-info h3 {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-main);
+}
+.metric-info p {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Toolbar & Action Buttons */
+.toolbar-banner {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #FFFFFF;
+}
+.btn-primary:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 12px var(--primary-glow);
+}
+.btn-excel {
+  background: #107C41;
+  color: #FFFFFF;
+}
+.btn-excel:hover {
+  background: #0E6B37;
+  box-shadow: 0 4px 12px rgba(16, 124, 65, 0.25);
+}
+.btn-outline {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+.btn-outline:hover {
+  background: var(--bg-card-subtle);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+/* Content Card & Table */
+.content-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.card-header-bar {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.search-filter-box {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 260px;
+}
+.input-search {
+  flex: 1;
+  min-width: 180px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.input-search:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.select-filter {
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Table */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.roster-table th {
+  background: var(--bg-card-subtle);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+.roster-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.roster-table tbody tr:hover {
+  background: var(--bg-card-subtle);
+}
+
+.student-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(15, 77, 42, 0.2);
+}
+.student-name {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 14px;
+}
+.student-sub {
+  font-size: 11px;
+  color: var(--text-light);
+}
+.email-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+.email-link:hover {
+  text-decoration: underline;
+}
+.wilaya-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-card-subtle);
+  color: var(--text-main);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+}
+.wilaya-code {
+  background: var(--primary);
+  color: #FFFFFF;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}
+.group-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: #DCFCE7;
+  color: #166534;
+}
+
+/* Toast */
+.toast-notice {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #0F172A;
+  color: #FFFFFF;
+  padding: 12px 22px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.toast-notice.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Print Stylesheet for Professor */
+@media print {
+  body { background: #FFFFFF !important; color: #000000 !important; padding: 0 !important; }
+  .header-wrapper { background: none !important; color: #000000 !important; padding: 0 0 10px !important; border-bottom: 2px solid #000000 !important; box-shadow: none !important; }
+  .republic-text { color: #000000 !important; }
+  .branding-text h1 { font-size: 16px !important; color: #000000 !important; }
+  .branding-text p { color: #333333 !important; }
+  .toolbar-banner, .card-header-bar, .toast-notice, #navBackBtn { display: none !important; }
+  .content-card { border: none !important; box-shadow: none !important; }
+  .roster-table th { background: #EEEEEE !important; color: #000000 !important; border: 1px solid #000000 !important; }
+  .roster-table td { border: 1px solid #CCCCCC !important; color: #000000 !important; }
+  .avatar-badge { display: none !important; }
+  .wilaya-badge { border: none !important; background: none !important; }
+  .wilaya-code { background: #333333 !important; color: #FFFFFF !important; }
+  .email-link { color: #000000 !important; text-decoration: none !important; }
+}
+
+@media (max-width: 768px) {
+  .header-wrapper { padding: 20px 16px; }
+  .school-branding { flex-direction: column; text-align: center; }
+  .letterhead-top { justify-content: center; text-align: center; }
+  .toolbar-banner { flex-direction: column; align-items: stretch; }
+  .card-header-bar { flex-direction: column; align-items: stretch; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header & Official Academic Letterhead -->
+<header class="header-wrapper">
+  <div class="header-inner">
+    <div class="letterhead-top">
+      <div class="republic-text">People's Democratic Republic of Algeria</div>
+      <div class="portal-badges">
+        <span class="badge-pill active-pill">Faculty &amp; Delegates Portal</span>
+        <span class="badge-pill">Group 05 (PEM)</span>
+        <span class="badge-pill">Academic Year 2026/2027</span>
+      </div>
+    </div>
+
+    <div class="school-branding">
+      <img src="logo.webp" alt="ENS Bouzareah" class="school-logo" onerror="this.src='https://ui-avatars.com/api/?name=ENSB&background=0F4D2A&color=fff&size=128'">
+      <div class="branding-text">
+        <h1>High Normal School of Bouzareah (ENSB)</h1>
+        <p>Department of English Language &amp; Literature — 2nd Year PEM • Official Student Directory</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ACCESS SHIELD (Shown if unauthorized) -->
+<div id="shieldSection" class="access-shield-container" style="display: none;">
+  <div class="shield-card">
+    <div class="shield-icon">🔒</div>
+    <h2 class="shield-title">Faculty Access Only</h2>
+    <p class="shield-desc">
+      This official roster and Excel export are protected to preserve student privacy. Please enter the teacher access key.
+    </p>
+
+    <form onsubmit="handleManualUnlock(event)">
+      <input type="password" id="inputTeacherKey" class="key-input" placeholder="Teacher Access Key" required>
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 12px;">
+        Unlock Directory
+      </button>
+    </form>
+
+    <div style="margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; font-size: 12px; color: var(--text-muted);">
+      Are you a student? <a href="register.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Submit your information here</a>
+    </div>
+  </div>
+</div>
+
+<!-- AUTHORIZED TEACHER VIEW -->
+<main class="main-container" id="rosterSection" style="display: none;">
+
+  <!-- KPI Metrics Banner -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon">👥</div>
+      <div class="metric-info">
+        <h3 id="statTotalStudents">0</h3>
+        <p>Enrolled Students</p>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">📍</div>
+      <div class="metric-info">
+        <h3 id="statTotalWilayas">0</h3>
+        <p>Wilayas Represented</p>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">🎓</div>
+      <div class="metric-info">
+        <h3>Group 05</h3>
+        <p>PEM English Section</p>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon">🏛️</div>
+      <div class="metric-info">
+        <h3>ENSB</h3>
+        <p>Bouzareah, Algiers</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Toolbar Banner -->
+  <div class="toolbar-banner">
+    <div>
+      <div style="font-size:14px; font-weight:800; color:var(--text-main);">Official Class Roster &amp; Data Export</div>
+      <div style="font-size:12px; color:var(--text-muted);">Download the full student directory in Excel format or print for academic records.</div>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn-excel btn-sm" onclick="exportToExcel('xlsx')">
+        📥 Export to Excel (.xlsx)
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="exportToExcel('csv')">
+        📄 Download CSV (.csv)
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">
+        🖨️ Print Roster / PDF
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="copyStudentLink()">
+        🔗 Copy Student Invite Link
+      </button>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="content-card">
+    <div class="card-header-bar">
+      <div class="search-filter-box">
+        <input type="text" id="rosterSearch" class="input-search" placeholder="🔍 Search by student name, email, or wilaya..." oninput="handleFilter()">
+        <select id="wilayaFilter" class="select-filter" onchange="handleFilter()">
+          <option value="">All Wilayas</option>
+        </select>
+        <select id="sortFilter" class="select-filter" onchange="handleFilter()">
+          <option value="name_asc">Name (A → Z)</option>
+          <option value="name_desc">Name (Z → A)</option>
+          <option value="date_desc">Most Recent</option>
+        </select>
+      </div>
+
+      <a href="index.html" class="btn btn-outline btn-sm" id="navBackBtn">
+        ⬅️ Back to Main App
+      </a>
+    </div>
+
+    <div class="table-responsive">
+      <table class="roster-table">
+        <thead>
+          <tr>
+            <th style="width: 44px; text-align: center;">No.</th>
+            <th>Full Name</th>
+            <th>Email Address</th>
+            <th>Wilaya</th>
+            <th>Group</th>
+            <th>Phone Number</th>
+            <th>Date Registered</th>
+          </tr>
+        </thead>
+        <tbody id="rosterTableBody">
+          <!-- Filled dynamically via JS -->
+        </tbody>
+      </table>
+      <div id="emptyNotice" style="display:none; text-align:center; padding:40px 20px; color:var(--text-muted);">
+        <div style="font-size:32px; margin-bottom:8px">👥</div>
+        <h3>No students found</h3>
+        <p>No students match your search criteria.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toastNotification" class="toast-notice"></div>
+
+<script>
+const ALGERIAN_WILAYAS = [
+  "01 - Adrar", "02 - Chlef", "03 - Laghouat", "04 - Oum El Bouaghi", "05 - Batna",
+  "06 - Béjaïa", "07 - Biskra", "08 - Béchar", "09 - Blida", "10 - Bouira",
+  "11 - Tamanrasset", "12 - Tébessa", "13 - Tlemcen", "14 - Tiaret", "15 - Tizi Ouzou",
+  "16 - Alger", "17 - Djelfa", "18 - Jijel", "19 - Sétif", "20 - Saïda",
+  "21 - Skikda", "22 - Sidi Bel Abbès", "23 - Annaba", "24 - Guelma", "25 - Constantine",
+  "26 - Médéa", "27 - Mostaganem", "28 - M'Sila", "29 - Mascara", "30 - Ouargla",
+  "31 - Oran", "32 - El Bayadh", "33 - Illizi", "34 - Bordj Bou Arréridj", "35 - Boumerdès",
+  "36 - El Tarf", "37 - Tindouf", "38 - Tissemsilt", "39 - El Oued", "40 - Khenchela",
+  "41 - Souk Ahras", "42 - Tipaza", "43 - Mila", "44 - Aïn Defla", "45 - Naâma",
+  "46 - Aïn Témouchent", "47 - Ghardaïa", "48 - Relizane", "49 - Timimoun", "50 - Bordj Badji Mokhtar",
+  "51 - Ouled Djellal", "52 - Béni Abbès", "53 - In Salah", "54 - In Guezzam", "55 - Touggourt",
+  "56 - Djanet", "57 - El M'Ghair", "58 - El Meniaa"
+];
+
+const TEACHER_AUTH_KEY = "ensb2026";
+let activeKey = "";
+let allStudents = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  populateWilayas();
+  checkAuthentication();
+});
+
+function populateWilayas() {
+  const filter = document.getElementById('wilayaFilter');
+  ALGERIAN_WILAYAS.forEach(w => {
+    if (!w) return;
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    filter.appendChild(opt);
+  });
+}
+
+function checkAuthentication() {
+  const params = new URLSearchParams(window.location.search);
+  const keyParam = params.get('key');
+  const sessionKey = sessionStorage.getItem('ensb_teacher_key');
+
+  if (keyParam === TEACHER_AUTH_KEY || sessionKey === TEACHER_AUTH_KEY) {
+    activeKey = TEACHER_AUTH_KEY;
+    sessionStorage.setItem('ensb_teacher_key', TEACHER_AUTH_KEY);
+    unlockView();
+  } else {
+    document.getElementById('shieldSection').style.display = 'block';
+    document.getElementById('rosterSection').style.display = 'none';
+  }
+}
+
+function handleManualUnlock(e) {
+  e.preventDefault();
+  const val = document.getElementById('inputTeacherKey').value.trim();
+  if (val.toLowerCase() === TEACHER_AUTH_KEY) {
+    activeKey = TEACHER_AUTH_KEY;
+    sessionStorage.setItem('ensb_teacher_key', TEACHER_AUTH_KEY);
+    unlockView();
+  } else {
+    alert('Invalid teacher access key. Please verify with group delegates.');
+  }
+}
+
+async function unlockView() {
+  document.getElementById('shieldSection').style.display = 'none';
+  document.getElementById('rosterSection').style.display = 'block';
+  await fetchTeacherStudents();
+}
+
+async function fetchTeacherStudents() {
+  try {
+    const res = await fetch(`/api/students?key=${activeKey}`, {
+      headers: { 'X-Teacher-Key': activeKey }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      allStudents = data.students || [];
+      renderTable();
+      return;
+    }
+  } catch (err) {
+    console.warn('Backend unavailable', err);
+  }
+}
+
+function renderTable() {
+  const search = (document.getElementById('rosterSearch').value || '').trim().toLowerCase();
+  const wilaya = document.getElementById('wilayaFilter').value;
+  const sort = document.getElementById('sortFilter').value;
+
+  let filtered = allStudents.filter(s => {
+    const name = (s.fullName || '').toLowerCase();
+    const email = (s.email || '').toLowerCase();
+    const w = (s.wilaya || '').toLowerCase();
+    const matchesSearch = !search || name.includes(search) || email.includes(search) || w.includes(search);
+    const matchesWilaya = !wilaya || s.wilaya === wilaya;
+    return matchesSearch && matchesWilaya;
+  });
+
+  if (sort === 'name_asc') {
+    filtered.sort((a,b) => (a.fullName || '').localeCompare(b.fullName || ''));
+  } else if (sort === 'name_desc') {
+    filtered.sort((a,b) => (b.fullName || '').localeCompare(a.fullName || ''));
+  } else if (sort === 'date_desc') {
+    filtered.sort((a,b) => new Date(b.registeredAt || 0) - new Date(a.registeredAt || 0));
+  }
+
+  // Update Stats
+  document.getElementById('statTotalStudents').textContent = allStudents.length;
+  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(Boolean));
+  document.getElementById('statTotalWilayas').textContent = uniqueWilayas.size;
+
+  const tbody = document.getElementById('rosterTableBody');
+  const emptyNotice = document.getElementById('emptyNotice');
+  tbody.innerHTML = '';
+
+  if (filtered.length === 0) {
+    emptyNotice.style.display = 'block';
+    return;
+  }
+  emptyNotice.style.display = 'none';
+
+  filtered.forEach((s, idx) => {
+    const tr = document.createElement('tr');
+    const nameParts = (s.fullName || 'E').trim().split(/\s+/);
+    const initials = nameParts.length >= 2 
+      ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
+      : nameParts[0].slice(0, 2).toUpperCase();
+
+    const wilayaParts = (s.wilaya || '').split(' - ');
+    const code = wilayaParts[0] || 'DZ';
+    const name = wilayaParts[1] || s.wilaya || '—';
+
+    let dateStr = '—';
+    if (s.registeredAt) {
+      try {
+        const d = new Date(s.registeredAt);
+        dateStr = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      } catch(e) {}
+    }
+
+    tr.innerHTML = `
+      <td style="text-align:center; font-weight:700; color:var(--text-light);">${idx + 1}</td>
+      <td>
+        <div class="student-name-cell">
+          <div class="avatar-badge">${escapeHTML(initials)}</div>
+          <div>
+            <div class="student-name">${escapeHTML(s.fullName)}</div>
+            <div class="student-sub">2nd Year PEM • ENS Bouzareah</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <a href="mailto:${escapeHTML(s.email)}" class="email-link">
+          ✉️ ${escapeHTML(s.email)}
+        </a>
+      </td>
+      <td>
+        <span class="wilaya-badge">
+          <span class="wilaya-code">${escapeHTML(code)}</span>
+          <span>${escapeHTML(name)}</span>
+        </span>
+      </td>
+      <td>
+        <span class="group-tag">${escapeHTML(s.group || 'Group 05')}</span>
+      </td>
+      <td>
+        ${s.phone ? `<a href="https://wa.me/${s.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:var(--text-muted); text-decoration:none; font-weight:600;">📱 ${escapeHTML(s.phone)}</a>` : '<span style="color:var(--text-light);">—</span>'}
+      </td>
+      <td style="color:var(--text-light); font-size:12px; white-space:nowrap;">
+        ${dateStr}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function handleFilter() {
+  renderTable();
+}
+
+function exportToExcel(format = 'xlsx') {
+  if (allStudents.length === 0) {
+    alert('No students to export.');
+    return;
+  }
+
+  if (format === 'csv') {
+    window.location.href = `/api/export-students-csv?key=${activeKey}`;
+    showToast('📥 Downloading CSV file...');
+  } else {
+    // Formatted HTML Excel Workbook (.xls)
+    let excelHTML = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>
+        <x:Name>Group 05 ENSB</x:Name>
+        <x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>
+        </x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+        <meta http-equiv="content-type" content="text/plain; charset=UTF-8"/>
+        <style>
+          th { background-color: #0F4D2A; color: #FFFFFF; font-weight: bold; border: 1px solid #000000; padding: 8px; text-align: left; }
+          td { border: 1px solid #CCCCCC; padding: 6px; }
+          .header-title { font-size: 16pt; font-weight: bold; color: #0F4D2A; }
+          .header-sub { font-size: 11pt; color: #555555; }
+        </style>
+      </head>
+      <body>
+        <table>
+          <tr><td colspan="7" class="header-title">HIGH NORMAL SCHOOL OF BOUZAREAH (ENSB)</td></tr>
+          <tr><td colspan="7" class="header-sub">Department of English Language &amp; Literature — 2nd Year PEM (2026/2027) — Official Group 05 Directory</td></tr>
+          <tr><td colspan="7"></td></tr>
+          <tr>
+            <th>No.</th>
+            <th>Full Name</th>
+            <th>Email Address</th>
+            <th>Wilaya</th>
+            <th>Group</th>
+            <th>Phone Number</th>
+            <th>Registration Date</th>
+          </tr>
+    `;
+
+    allStudents.forEach((s, idx) => {
+      excelHTML += `
+        <tr>
+          <td style="text-align:center;">${idx + 1}</td>
+          <td style="font-weight:bold;">${escapeHTML(s.fullName)}</td>
+          <td>${escapeHTML(s.email)}</td>
+          <td>${escapeHTML(s.wilaya)}</td>
+          <td>${escapeHTML(s.group || 'Group 05')}</td>
+          <td>${escapeHTML(s.phone || '')}</td>
+          <td>${escapeHTML(s.registeredAt || '')}</td>
+        </tr>
+      `;
+    });
+
+    excelHTML += `</table></body></html>`;
+
+    const blob = new Blob([excelHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ENSB_PEM2_Group05_Student_Directory.xls';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📥 Excel spreadsheet downloaded successfully!');
+  }
+}
+
+function copyStudentLink() {
+  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'register.html';
+  navigator.clipboard.writeText(url).then(() => showToast('🔗 Student registration link copied!'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toastNotification');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>
