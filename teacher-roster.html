@@ -726,7 +726,7 @@ body {
       <div class="metric-icon">📍</div>
       <div class="metric-info">
         <h3 id="statTotalWilayas">0</h3>
-        <p>Wilayas Represented</p>
+        <p id="statWilayaSub">Wilayas Assigned</p>
       </div>
     </div>
     <div class="metric-card">
@@ -1079,7 +1079,25 @@ async function fetchTeacherStudents(showToastMsg = false) {
     if (!Array.isArray(localStudents)) localStudents = [];
   } catch(e) {}
 
-  // 6. Filter out any student in permanent deleted blacklist (never reappears on refresh)
+  // 6. Restore any customized wilayas from dedicated key-value store
+  let savedWilayas = {};
+  try {
+    savedWilayas = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+  } catch(e) {}
+
+  const applySavedWilaya = (s) => {
+    if (!s) return;
+    const sId = String(s.id || '').toLowerCase().trim();
+    const sMat = String(s.matricule || '').toLowerCase().trim();
+    const sEmail = String(s.email || '').toLowerCase().trim();
+    const sName = String(s.fullName || '').toLowerCase().trim();
+    const w = savedWilayas[sId] || (sMat && savedWilayas[sMat]) || (sEmail && savedWilayas[sEmail]) || (sName && savedWilayas[sName]);
+    if (w && (!s.wilaya || !s.wilaya.trim())) {
+      s.wilaya = w;
+    }
+  };
+
+  // 7. Filter out any student in permanent deleted blacklist (never reappears on refresh)
   let deletedList = [];
   try {
     deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
@@ -1105,30 +1123,78 @@ async function fetchTeacherStudents(showToastMsg = false) {
   fetchedList = fetchedList.filter(s => !isDeleted(s));
   localStudents = localStudents.filter(s => !isDeleted(s));
 
-  // Merge map by matricule, email, or full name
-  const map = new Map();
-  fetchedList.forEach(s => {
-    const key = (s.matricule || s.email || s.fullName || '').toLowerCase().trim();
-    if (key) map.set(key, s);
-  });
+  fetchedList.forEach(applySavedWilaya);
 
-  localStudents.forEach(s => {
-    const key = (s.matricule || s.email || s.fullName || '').toLowerCase().trim();
-    if (key) {
-      if (map.has(key)) {
-        map.set(key, { ...map.get(key), ...s });
-      } else {
-        map.set(key, s);
+  // Merge fetchedList with localStudents safely using areSameStudent
+  const mergedList = [...fetchedList];
+  localStudents.forEach(ls => {
+    applySavedWilaya(ls);
+    const existingIdx = mergedList.findIndex(s => areSameStudent(s, ls));
+    if (existingIdx >= 0) {
+      mergedList[existingIdx] = { ...mergedList[existingIdx], ...ls };
+      if (ls.wilaya && ls.wilaya.trim()) {
+        mergedList[existingIdx].wilaya = ls.wilaya;
       }
+    } else {
+      mergedList.push(ls);
     }
   });
 
-  allStudents = Array.from(map.values()).filter(s => !isDeleted(s));
+  allStudents = mergedList.filter(s => !isDeleted(s));
   renderTable();
 
   if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
   if (showToastMsg) {
     showToast(`✅ Roster updated: ${allStudents.length} students loaded via ${sourceName}`);
+  }
+}
+
+function areSameStudent(a, b) {
+  if (!a || !b) return false;
+  const aId = String(a.id || '').toLowerCase().trim();
+  const bId = String(b.id || '').toLowerCase().trim();
+  if (aId && bId && aId === bId) return true;
+
+  const aMat = String(a.matricule || '').toLowerCase().trim();
+  const bMat = String(b.matricule || '').toLowerCase().trim();
+  if (aMat && bMat && aMat === bMat) return true;
+
+  const aEmail = String(a.email || '').toLowerCase().trim();
+  const bEmail = String(b.email || '').toLowerCase().trim();
+  if (aEmail && bEmail && aEmail === bEmail) return true;
+
+  const aName = String(a.fullName || '').toLowerCase().trim();
+  const bName = String(b.fullName || '').toLowerCase().trim();
+  if (aName && bName && aName === bName) return true;
+
+  return false;
+}
+
+function updateStatsCounters() {
+  const totalStudents = allStudents.length;
+  const assignedStudents = allStudents.filter(s => s.wilaya && s.wilaya.trim());
+  const assignedCount = assignedStudents.length;
+  const uniqueWilayas = new Set(assignedStudents.map(s => s.wilaya.trim()));
+  const uniqueCount = uniqueWilayas.size;
+
+  const totalEl = document.getElementById('statTotalStudents');
+  if (totalEl) totalEl.textContent = totalStudents;
+
+  const wilayaEl = document.getElementById('statTotalWilayas');
+  const wilayaSubEl = document.getElementById('statWilayaSub');
+
+  if (wilayaEl) {
+    // Show total students who have a Wilaya assigned
+    wilayaEl.textContent = assignedCount;
+  }
+  if (wilayaSubEl) {
+    if (assignedCount === 0) {
+      wilayaSubEl.textContent = 'Wilayas Assigned';
+    } else if (uniqueCount === 1) {
+      wilayaSubEl.textContent = `Wilayas Assigned (1 Province)`;
+    } else {
+      wilayaSubEl.textContent = `Wilayas Assigned (${uniqueCount} Provinces)`;
+    }
   }
 }
 
@@ -1143,7 +1209,7 @@ function renderTable() {
     const mat = (s.matricule || '').toLowerCase();
     const w = (s.wilaya || '').toLowerCase();
     const matchesSearch = !search || name.includes(search) || email.includes(search) || mat.includes(search) || w.includes(search);
-    const matchesWilaya = !wilaya || (wilaya === 'unassigned' ? (!s.wilaya || !s.wilaya.trim()) : s.wilaya === wilaya);
+    const matchesWilaya = !wilaya || (wilaya === 'unassigned' ? (!s.wilaya || !s.wilaya.trim()) : (s.wilaya && s.wilaya.trim().toLowerCase() === wilaya.trim().toLowerCase()));
     return matchesSearch && matchesWilaya;
   });
 
@@ -1156,12 +1222,7 @@ function renderTable() {
   }
 
   // Update KPI counters
-  const totalEl = document.getElementById('statTotalStudents');
-  if (totalEl) totalEl.textContent = allStudents.length;
-
-  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(w => w && w.trim()));
-  const wilayaEl = document.getElementById('statTotalWilayas');
-  if (wilayaEl) wilayaEl.textContent = uniqueWilayas.size;
+  updateStatsCounters();
 
   const tbody = document.getElementById('rosterTableBody');
   const emptyNotice = document.getElementById('emptyNotice');
@@ -1245,25 +1306,40 @@ function renderTable() {
 
 // DIRECT INLINE WILAYA UPDATE (Instant, 0 Modals, Works on All Phones)
 async function updateWilayaDirect(id, newWilaya) {
-  const std = allStudents.find(s => s.id === id);
+  const std = allStudents.find(s => String(s.id) === String(id));
   if (!std) return;
 
   std.wilaya = newWilaya;
 
-  // 1. Persist to localStorage
+  // 1. Persist to dedicated ensb_student_wilayas map (key-value store)
+  try {
+    let savedWilayas = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+    const keys = [std.id, std.matricule, std.email, std.fullName]
+      .filter(Boolean)
+      .map(k => String(k).toLowerCase().trim());
+
+    if (newWilaya) {
+      keys.forEach(k => { savedWilayas[k] = newWilaya; });
+    } else {
+      keys.forEach(k => { delete savedWilayas[k]; });
+    }
+    localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedWilayas));
+  } catch(err) {}
+
+  // 2. Persist to localStorage ensb_registered_students list
   try {
     let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
     if (!Array.isArray(localList)) localList = [];
-    const idx = localList.findIndex(s => s.id === id || (s.matricule && s.matricule === std.matricule));
+    const idx = localList.findIndex(s => areSameStudent(s, std));
     if (idx >= 0) {
-      localList[idx].wilaya = newWilaya;
+      localList[idx] = { ...localList[idx], ...std, wilaya: newWilaya };
     } else {
       localList.push({ ...std, wilaya: newWilaya });
     }
     localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
   } catch(err) {}
 
-  // 2. Attempt local server save
+  // 3. Attempt local server save
   try {
     await fetch('/api/register-student', {
       method: 'POST',
@@ -1272,7 +1348,7 @@ async function updateWilayaDirect(id, newWilaya) {
     });
   } catch(err) {}
 
-  // 3. Broadcast to other open tabs
+  // 4. Broadcast to other open tabs
   try {
     if ('BroadcastChannel' in window) {
       const bc = new BroadcastChannel('ensb_roster_channel');
@@ -1281,10 +1357,8 @@ async function updateWilayaDirect(id, newWilaya) {
     }
   } catch(err) {}
 
-  // 4. Update KPI counters
-  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(w => w && w.trim()));
-  const wilayaEl = document.getElementById('statTotalWilayas');
-  if (wilayaEl) wilayaEl.textContent = uniqueWilayas.size;
+  // 5. Update KPI counters immediately
+  updateStatsCounters();
 
   renderTable();
 
@@ -1375,6 +1449,16 @@ async function handleManualAddStudent(e) {
     localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
   } catch(err) {}
 
+  if (wilaya) {
+    try {
+      let savedWilayas = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+      [studentObj.id, studentObj.email, studentObj.fullName].forEach(k => {
+        if (k) savedWilayas[String(k).toLowerCase().trim()] = wilaya;
+      });
+      localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedWilayas));
+    } catch(err) {}
+  }
+
   // Attempt local server save
   try {
     await fetch('/api/register-student', {
@@ -1455,6 +1539,15 @@ async function executeConfirmDelete() {
       });
       localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
     }
+  } catch(err) {}
+
+  // 3. Remove from dedicated wilaya map in localStorage
+  try {
+    let savedWilayas = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+    [std.id, std.matricule, std.email, std.fullName].forEach(k => {
+      if (k) delete savedWilayas[String(k).toLowerCase().trim()];
+    });
+    localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedWilayas));
   } catch(err) {}
 
   // 3. Attempt local Python server deletion (updates data.json on disk)
