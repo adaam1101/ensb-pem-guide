@@ -802,6 +802,30 @@ body {
   </div>
 </div>
 
+<!-- Modal: Customize Student Wilaya -->
+<div id="editWilayaModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 id="editWilayaStudentName">📍 Customize Wilaya</h3>
+      <button class="modal-close" onclick="closeModal('editWilayaModal')">✕</button>
+    </div>
+    <form onsubmit="handleSaveWilaya(event)">
+      <input type="hidden" id="editWilayaStudentId">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Select Home Wilaya (Algeria 1 - 58)</label>
+        <select id="editWilayaSelect" class="select-filter" style="width:100%;" required>
+          <option value="">Select Wilaya...</option>
+        </select>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">You can set or update the Wilaya for each student individually anytime.</div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('editWilayaModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Wilaya</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="toastNotification" class="toast-notice"></div>
 
 <script>
@@ -831,6 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function populateWilayas() {
   const filter = document.getElementById('wilayaFilter');
+  filter.innerHTML = '<option value="">All Wilayas</option><option value="unassigned">📍 Wilaya Not Set</option>';
   ALGERIAN_WILAYAS.forEach(w => {
     if (!w) return;
     const opt = document.createElement('option');
@@ -879,7 +904,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
   if (refreshBtn) refreshBtn.textContent = '🔄 Loading...';
 
   let fetchedList = [];
-  let sourceName = 'Cache';
+  let sourceName = 'Official Directory';
 
   // 1. Try local Python server endpoint (if running locally)
   try {
@@ -922,7 +947,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
         const data = await res.json();
         if (data && Array.isArray(data.students)) {
           fetchedList = data.students;
-          sourceName = 'data.json';
+          sourceName = 'Official Directory';
         }
       }
     } catch(e) {}
@@ -942,28 +967,22 @@ async function fetchTeacherStudents(showToastMsg = false) {
     } catch(e) {}
   }
 
-  // 5. Merge with browser localStorage registered students
+  // 5. Merge with browser localStorage registered students (e.g. customized wilayas)
   let localStudents = [];
   try {
     localStudents = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
     if (!Array.isArray(localStudents)) localStudents = [];
-    // Auto purge legacy test entries
-    localStudents = localStudents.filter(s => {
-      const em = (s.email || '').toLowerCase().trim();
-      return em !== 'sarah.belkacem@ensb.dz' && em !== 'adaam9054@gmail.com';
-    });
-    localStorage.setItem('ensb_registered_students', JSON.stringify(localStudents));
   } catch(e) {}
 
-  // Merge map by email or name
+  // Merge map by matricule, email, or full name
   const map = new Map();
   fetchedList.forEach(s => {
-    const key = (s.email || s.fullName || '').toLowerCase().trim();
-    if (key && key !== 'sarah.belkacem@ensb.dz' && key !== 'adaam9054@gmail.com') map.set(key, s);
+    const key = (s.matricule || s.email || s.fullName || '').toLowerCase().trim();
+    if (key) map.set(key, s);
   });
 
   localStudents.forEach(s => {
-    const key = (s.email || s.fullName || '').toLowerCase().trim();
+    const key = (s.matricule || s.email || s.fullName || '').toLowerCase().trim();
     if (key) {
       if (map.has(key)) {
         map.set(key, { ...map.get(key), ...s });
@@ -973,23 +992,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
     }
   });
 
-  // 6. Exclude any students on the permanent deleted blacklist
-  let deletedBlacklist = [];
-  try {
-    deletedBlacklist = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
-    if (!Array.isArray(deletedBlacklist)) deletedBlacklist = [];
-  } catch(e) {}
-
-  allStudents = Array.from(map.values()).filter(s => {
-    const sId = (s.id || '').trim();
-    const sEmail = (s.email || '').toLowerCase().trim();
-    const sName = (s.fullName || '').toLowerCase().trim();
-    if (sId && deletedBlacklist.includes(sId)) return false;
-    if (sEmail && deletedBlacklist.includes(sEmail)) return false;
-    if (sName && deletedBlacklist.includes(sName)) return false;
-    return true;
-  });
-
+  allStudents = Array.from(map.values());
   renderTable();
 
   if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
@@ -1006,9 +1009,10 @@ function renderTable() {
   let filtered = allStudents.filter(s => {
     const name = (s.fullName || '').toLowerCase();
     const email = (s.email || '').toLowerCase();
+    const mat = (s.matricule || '').toLowerCase();
     const w = (s.wilaya || '').toLowerCase();
-    const matchesSearch = !search || name.includes(search) || email.includes(search) || w.includes(search);
-    const matchesWilaya = !wilaya || s.wilaya === wilaya;
+    const matchesSearch = !search || name.includes(search) || email.includes(search) || mat.includes(search) || w.includes(search);
+    const matchesWilaya = !wilaya || (wilaya === 'unassigned' ? (!s.wilaya || !s.wilaya.trim()) : s.wilaya === wilaya);
     return matchesSearch && matchesWilaya;
   });
 
@@ -1024,7 +1028,7 @@ function renderTable() {
   const totalEl = document.getElementById('statTotalStudents');
   if (totalEl) totalEl.textContent = allStudents.length;
 
-  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(Boolean));
+  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(w => w && w.trim()));
   const wilayaEl = document.getElementById('statTotalWilayas');
   if (wilayaEl) wilayaEl.textContent = uniqueWilayas.size;
 
@@ -1046,9 +1050,25 @@ function renderTable() {
       ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
       : nameParts[0].slice(0, 2).toUpperCase();
 
-    const wilayaParts = (s.wilaya || '').split(' - ');
-    const code = wilayaParts[0] || 'DZ';
-    const name = wilayaParts[1] || s.wilaya || '—';
+    let wilayaBadge = '';
+    if (s.wilaya && s.wilaya.trim()) {
+      const wilayaParts = s.wilaya.split(' - ');
+      const code = wilayaParts[0] || 'DZ';
+      const name = wilayaParts[1] || s.wilaya;
+      wilayaBadge = `
+        <span class="wilaya-badge" style="cursor:pointer;" onclick="openEditWilayaModal('${escapeHTML(s.id)}')" title="Click to edit Wilaya">
+          <span class="wilaya-code">${escapeHTML(code)}</span>
+          <span>${escapeHTML(name)}</span>
+          <span style="font-size:10px;opacity:0.6;margin-left:4px;">✏️</span>
+        </span>
+      `;
+    } else {
+      wilayaBadge = `
+        <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;border-style:dashed;color:var(--primary);border-color:var(--primary);background:var(--bg-card-subtle);cursor:pointer;" onclick="openEditWilayaModal('${escapeHTML(s.id)}')">
+          📍 Set Wilaya +
+        </button>
+      `;
+    }
 
     let dateStr = '—';
     if (s.registeredAt) {
@@ -1058,6 +1078,8 @@ function renderTable() {
       } catch(e) {}
     }
 
+    const matHTML = s.matricule ? `<span style="font-weight:700;color:var(--primary);">ID: ${escapeHTML(s.matricule)}</span> • ` : '';
+
     tr.innerHTML = `
       <td style="text-align:center; font-weight:700; color:var(--text-light);">${idx + 1}</td>
       <td>
@@ -1065,7 +1087,7 @@ function renderTable() {
           <div class="avatar-badge">${escapeHTML(initials)}</div>
           <div>
             <div class="student-name">${escapeHTML(s.fullName)}</div>
-            <div class="student-sub">2nd Year PEM • ENS Bouzareah</div>
+            <div class="student-sub">${matHTML}2nd Year PEM (G05)</div>
           </div>
         </div>
       </td>
@@ -1075,10 +1097,7 @@ function renderTable() {
         </a>
       </td>
       <td>
-        <span class="wilaya-badge">
-          <span class="wilaya-code">${escapeHTML(code)}</span>
-          <span>${escapeHTML(name)}</span>
-        </span>
+        ${wilayaBadge}
       </td>
       <td>
         <span class="group-tag">${escapeHTML(s.group || 'Group 05')}</span>
@@ -1095,6 +1114,64 @@ function renderTable() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+// EDIT STUDENT WILAYA
+function openEditWilayaModal(id) {
+  const std = allStudents.find(s => s.id === id);
+  if (!std) return;
+
+  document.getElementById('editWilayaStudentId').value = id;
+  document.getElementById('editWilayaStudentName').textContent = `📍 Wilaya: ${std.fullName}`;
+
+  const sel = document.getElementById('editWilayaSelect');
+  if (sel.options.length <= 1) {
+    ALGERIAN_WILAYAS.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = w;
+      sel.appendChild(opt);
+    });
+  }
+  sel.value = std.wilaya || '';
+  document.getElementById('editWilayaModal').classList.add('active');
+}
+
+async function handleSaveWilaya(e) {
+  e.preventDefault();
+  const id = document.getElementById('editWilayaStudentId').value;
+  const newWilaya = document.getElementById('editWilayaSelect').value;
+
+  const std = allStudents.find(s => s.id === id);
+  if (!std) return;
+
+  std.wilaya = newWilaya;
+
+  // Persist to localStorage
+  try {
+    let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (!Array.isArray(localList)) localList = [];
+    const idx = localList.findIndex(s => s.id === id || (s.email && s.email.toLowerCase() === std.email.toLowerCase()));
+    if (idx >= 0) {
+      localList[idx].wilaya = newWilaya;
+    } else {
+      localList.push(std);
+    }
+    localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
+  } catch(err) {}
+
+  // Attempt server save (if server running)
+  try {
+    await fetch('/api/register-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(std)
+    });
+  } catch(err) {}
+
+  closeModal('editWilayaModal');
+  renderTable();
+  showToast(`✅ Wilaya set to ${newWilaya} for ${std.fullName}!`);
 }
 
 function handleFilter() {
