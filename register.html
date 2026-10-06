@@ -500,31 +500,81 @@ async function handleRegistrationSubmit(e) {
   const fullName = document.getElementById('stdFullName').value.trim();
   const email = document.getElementById('stdEmail').value.trim().toLowerCase();
   const wilaya = document.getElementById('stdWilaya').value.trim();
-  const group = document.getElementById('stdGroup').value.trim();
+  const group = document.getElementById('stdGroup').value.trim() || 'Group 05';
   const phone = document.getElementById('stdPhone').value.trim();
 
-  const payload = { fullName, email, wilaya, group, phone };
+  const studentObj = {
+    id: 'std_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    fullName,
+    email,
+    wilaya,
+    group,
+    phone,
+    registeredAt: new Date().toISOString()
+  };
 
+  // 1. ALWAYS persist immediately in browser localStorage
+  try {
+    let localList = [];
+    try {
+      localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    } catch(err) { localList = []; }
+    if (!Array.isArray(localList)) localList = [];
+
+    const existingIdx = localList.findIndex(s => 
+      (s.email && s.email.toLowerCase() === email.toLowerCase()) || 
+      (s.fullName && s.fullName.toLowerCase() === fullName.toLowerCase())
+    );
+
+    if (existingIdx >= 0) {
+      localList[existingIdx] = { ...localList[existingIdx], ...studentObj };
+    } else {
+      localList.push(studentObj);
+    }
+    localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
+  } catch(err) {
+    console.warn('LocalStorage save error:', err);
+  }
+
+  // 2. Broadcast to any open teacher roster or admin tabs in real time
+  try {
+    if ('BroadcastChannel' in window) {
+      const channel = new BroadcastChannel('ensb_roster_channel');
+      channel.postMessage({ type: 'NEW_REGISTRATION', student: studentObj });
+      channel.close();
+    }
+  } catch(err) {}
+
+  // 3. Attempt local Python server endpoint (if running)
+  let serverSaved = false;
   try {
     const res = await fetch('/api/register-student', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(studentObj)
     });
-
-    const data = await res.json();
-    if (res.ok && data.success) {
-      showSuccess(payload);
-    } else {
-      alert(data.error || 'Error submitting registration. Please check the fields.');
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success) serverSaved = true;
     }
-  } catch (err) {
-    console.warn('Offline fallback saving', err);
-    showSuccess(payload);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✅ Submit My Information';
+  } catch(err) {}
+
+  // 4. Attempt Cloud Sync / Google Apps Script webhook (if configured)
+  const cloudUrl = localStorage.getItem('ensb_cloud_sync_url') || '';
+  if (cloudUrl) {
+    try {
+      await fetch(cloudUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentObj)
+      });
+    } catch(err) {}
   }
+
+  btn.disabled = false;
+  btn.textContent = '✅ Submit My Information';
+  showSuccess(studentObj);
 }
 
 function showSuccess(data) {

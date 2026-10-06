@@ -958,6 +958,19 @@ async function loadInitialData() {
     if (!currentData.announcements) currentData.announcements = [];
     if (!currentData.teachers) currentData.teachers = [];
     if (!currentData.students) currentData.students = [];
+
+    // Merge any locally registered students from this browser
+    try {
+      const localStds = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+      if (Array.isArray(localStds)) {
+        localStds.forEach(ls => {
+          if (!currentData.students.some(s => (s.email && s.email.toLowerCase() === (ls.email || '').toLowerCase()) || (s.fullName && s.fullName.toLowerCase() === (ls.fullName || '').toLowerCase()))) {
+            currentData.students.push(ls);
+          }
+        });
+      }
+    } catch(err) {}
+
     renderAll();
   } catch(e) {
     showToast('Failed to load data from server.');

@@ -507,6 +507,67 @@ body {
   .letterhead-top { justify-content: center; text-align: center; }
   .toolbar-banner { flex-direction: column; align-items: stretch; }
   .card-header-bar { flex-direction: column; align-items: stretch; }
+  .btn-del {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--danger);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .btn-del:hover {
+    background: #FEE2E2;
+    border-color: #FCA5A5;
+  }
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    max-width: 520px;
+    width: 100%;
+    padding: 24px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .modal-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
 }
 </style>
 </head>
@@ -598,11 +659,20 @@ body {
       <div style="font-size:12px; color:var(--text-muted);">Download the full student directory in Excel format or print for academic records.</div>
     </div>
     <div class="toolbar-actions">
+      <button class="btn btn-primary btn-sm" onclick="openAddStudentModal()">
+        + Add Student
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="fetchTeacherStudents(true)" id="refreshBtn">
+        🔄 Refresh
+      </button>
       <button class="btn btn-excel btn-sm" onclick="exportToExcel('xlsx')">
         📥 Export to Excel (.xlsx)
       </button>
       <button class="btn btn-outline btn-sm" onclick="exportToExcel('csv')">
         📄 Download CSV (.csv)
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="openCloudSyncModal()">
+        ☁️ Google Sheets Sync
       </button>
       <button class="btn btn-outline btn-sm" onclick="window.print()">
         🖨️ Print Roster / PDF
@@ -644,6 +714,7 @@ body {
             <th>Group</th>
             <th>Phone Number</th>
             <th>Date Registered</th>
+            <th style="text-align: right; width: 70px;">Action</th>
           </tr>
         </thead>
         <tbody id="rosterTableBody">
@@ -659,6 +730,77 @@ body {
   </div>
 
 </main>
+
+<!-- Modal: Add Student Manually -->
+<div id="addStudentModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>➕ Add Student to Group 05</h3>
+      <button class="modal-close" onclick="closeModal('addStudentModal')">✕</button>
+    </div>
+    <form onsubmit="handleManualAddStudent(event)">
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Full Name *</label>
+        <input type="text" id="manFullName" class="input-search" style="width:100%;" placeholder="e.g. Sarah Belkacem" required>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Email Address *</label>
+        <input type="email" id="manEmail" class="input-search" style="width:100%;" placeholder="e.g. sarah.belkacem@ensb.dz" required>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Wilaya *</label>
+        <select id="manWilaya" class="select-filter" style="width:100%;" required>
+          <option value="">Select Wilaya...</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Academic Group</label>
+        <input type="text" id="manGroup" class="input-search" style="width:100%;" value="Group 05">
+      </div>
+      <div style="margin-bottom:18px;">
+        <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Phone / WhatsApp (Optional)</label>
+        <input type="tel" id="manPhone" class="input-search" style="width:100%;" placeholder="e.g. 0555 12 34 56">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('addStudentModal')">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm">Save Student</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Cloud & Google Sheets Sync -->
+<div id="cloudSyncModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>☁️ Cloud &amp; Google Sheets Sync</h3>
+      <button class="modal-close" onclick="closeModal('cloudSyncModal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);line-height:1.5;margin-bottom:14px;">
+      Because GitHub Pages is a static host, you can connect a free <strong>Google Apps Script Web App</strong> so student submissions from any mobile device across Algeria land directly into your Google Sheet and sync here in real time.
+    </p>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Google Apps Script Web App URL</label>
+      <input type="url" id="cloudSyncUrlInput" class="input-search" style="width:100%;" placeholder="https://script.google.com/macros/s/.../exec">
+      <div style="font-size:11px;color:var(--text-light);margin-top:4px;">Paste the deployed Web App URL here.</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:18px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="clearCloudSync()">Disconnect</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="saveCloudSyncUrl()">Save &amp; Connect</button>
+    </div>
+
+    <details style="background:var(--bg-card-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:12px;">
+      <summary style="font-weight:700;cursor:pointer;color:var(--primary);">📋 1-Minute Free Setup Guide (Google Sheets)</summary>
+      <ol style="margin-top:8px;padding-left:18px;line-height:1.6;color:var(--text-main);">
+        <li>Create a new Google Sheet named <strong>ENSB Group 05 Students</strong>.</li>
+        <li>Go to <strong>Extensions → Apps Script</strong>.</li>
+        <li>Paste the script below and click <strong>Deploy → New deployment</strong>.</li>
+        <li>Select <strong>Web app</strong>, set <em>Who has access</em> to <strong>Anyone</strong>, and copy the Web App URL!</li>
+      </ol>
+      <textarea readonly style="width:100%;height:100px;font-family:monospace;font-size:10px;padding:8px;margin-top:6px;background:var(--bg-input);border:1px solid var(--border);border-radius:4px;" onclick="this.select()">function doPost(e){var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(),d=JSON.parse(e.postData.contents);s.appendRow([new Date(),d.fullName,d.email,d.wilaya,d.group,d.phone]);return ContentService.createTextOutput(JSON.stringify({success:true})).setMimeType(ContentService.MimeType.JSON);}function doGet(e){var s=SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(),r=s.getDataRange().getValues(),res=[];for(var i=1;i<r.length;i++){res.push({id:"std_"+i,registeredAt:r[i][0],fullName:r[i][1],email:r[i][2],wilaya:r[i][3],group:r[i][4],phone:r[i][5]});}return ContentService.createTextOutput(JSON.stringify({students:res})).setMimeType(ContentService.MimeType.JSON);}</textarea>
+    </details>
+  </div>
+</div>
 
 <div id="toastNotification" class="toast-notice"></div>
 
@@ -731,26 +873,113 @@ async function unlockView() {
   await fetchTeacherStudents();
 }
 
-async function fetchTeacherStudents() {
+// MULTI-SOURCE RESILIENT LOADER
+async function fetchTeacherStudents(showToastMsg = false) {
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) refreshBtn.textContent = '🔄 Loading...';
+
+  let fetchedList = [];
+  let sourceName = 'Cache';
+
+  // 1. Try local Python server endpoint (if running locally)
   try {
     const res = await fetch(`/api/students?key=${activeKey}`, {
       headers: { 'X-Teacher-Key': activeKey }
     });
     if (res.ok) {
       const data = await res.json();
-      allStudents = data.students || [];
-      renderTable();
-      return;
+      if (data && Array.isArray(data.students) && data.students.length > 0) {
+        fetchedList = data.students;
+        sourceName = 'Local Server';
+      }
     }
-  } catch (err) {
-    console.warn('Backend unavailable', err);
+  } catch(e) {}
+
+  // 2. Try configured Cloud Sync URL (Google Apps Script Web App / Webhook)
+  const cloudUrl = localStorage.getItem('ensb_cloud_sync_url') || '';
+  if (cloudUrl) {
+    try {
+      const res = await fetch(cloudUrl);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.students)) {
+          data.students.forEach(cs => {
+            if (!fetchedList.some(fs => (fs.email && fs.email.toLowerCase() === (cs.email || '').toLowerCase()))) {
+              fetchedList.push(cs);
+            }
+          });
+          sourceName = 'Google Cloud';
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 3. Fallback to data.json (relative path, works on GitHub Pages & localhost)
+  if (fetchedList.length === 0) {
+    try {
+      const res = await fetch('data.json', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.students)) {
+          fetchedList = data.students;
+          sourceName = 'data.json';
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 4. Fallback to GitHub Raw data.json
+  if (fetchedList.length === 0) {
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/adaam1101/ensb-pem-guide/main/data.json', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.students)) {
+          fetchedList = data.students;
+          sourceName = 'GitHub Live';
+        }
+      }
+    } catch(e) {}
+  }
+
+  // 5. Merge with browser localStorage registered students
+  let localStudents = [];
+  try {
+    localStudents = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (!Array.isArray(localStudents)) localStudents = [];
+  } catch(e) {}
+
+  // Merge map by email or name
+  const map = new Map();
+  fetchedList.forEach(s => {
+    const key = (s.email || s.fullName || '').toLowerCase().trim();
+    if (key) map.set(key, s);
+  });
+
+  localStudents.forEach(s => {
+    const key = (s.email || s.fullName || '').toLowerCase().trim();
+    if (key) {
+      if (map.has(key)) {
+        map.set(key, { ...map.get(key), ...s });
+      } else {
+        map.set(key, s);
+      }
+    }
+  });
+
+  allStudents = Array.from(map.values());
+  renderTable();
+
+  if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
+  if (showToastMsg) {
+    showToast(`✅ Roster updated: ${allStudents.length} students loaded via ${sourceName}`);
   }
 }
 
 function renderTable() {
-  const search = (document.getElementById('rosterSearch').value || '').trim().toLowerCase();
-  const wilaya = document.getElementById('wilayaFilter').value;
-  const sort = document.getElementById('sortFilter').value;
+  const search = (document.getElementById('rosterSearch')?.value || '').trim().toLowerCase();
+  const wilaya = document.getElementById('wilayaFilter')?.value || '';
+  const sort = document.getElementById('sortFilter')?.value || 'name_asc';
 
   let filtered = allStudents.filter(s => {
     const name = (s.fullName || '').toLowerCase();
@@ -769,20 +998,24 @@ function renderTable() {
     filtered.sort((a,b) => new Date(b.registeredAt || 0) - new Date(a.registeredAt || 0));
   }
 
-  // Update Stats
-  document.getElementById('statTotalStudents').textContent = allStudents.length;
+  // Update KPI counters
+  const totalEl = document.getElementById('statTotalStudents');
+  if (totalEl) totalEl.textContent = allStudents.length;
+
   const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(Boolean));
-  document.getElementById('statTotalWilayas').textContent = uniqueWilayas.size;
+  const wilayaEl = document.getElementById('statTotalWilayas');
+  if (wilayaEl) wilayaEl.textContent = uniqueWilayas.size;
 
   const tbody = document.getElementById('rosterTableBody');
   const emptyNotice = document.getElementById('emptyNotice');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   if (filtered.length === 0) {
-    emptyNotice.style.display = 'block';
+    if (emptyNotice) emptyNotice.style.display = 'block';
     return;
   }
-  emptyNotice.style.display = 'none';
+  if (emptyNotice) emptyNotice.style.display = 'none';
 
   filtered.forEach((s, idx) => {
     const tr = document.createElement('tr');
@@ -834,6 +1067,9 @@ function renderTable() {
       <td style="color:var(--text-light); font-size:12px; white-space:nowrap;">
         ${dateStr}
       </td>
+      <td style="text-align:right;">
+        <button class="btn-del" onclick="deleteStudentRecord('${escapeHTML(s.id)}')" title="Remove student">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -843,6 +1079,115 @@ function handleFilter() {
   renderTable();
 }
 
+// MANUAL ADD STUDENT
+function openAddStudentModal() {
+  const sel = document.getElementById('manWilaya');
+  if (sel && sel.options.length <= 1) {
+    ALGERIAN_WILAYAS.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w;
+      opt.textContent = w;
+      sel.appendChild(opt);
+    });
+  }
+  document.getElementById('addStudentModal').classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+async function handleManualAddStudent(e) {
+  e.preventDefault();
+  const fullName = document.getElementById('manFullName').value.trim();
+  const email = document.getElementById('manEmail').value.trim().toLowerCase();
+  const wilaya = document.getElementById('manWilaya').value.trim();
+  const group = document.getElementById('manGroup').value.trim() || 'Group 05';
+  const phone = document.getElementById('manPhone').value.trim();
+
+  const studentObj = {
+    id: 'std_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+    fullName,
+    email,
+    wilaya,
+    group,
+    phone,
+    registeredAt: new Date().toISOString()
+  };
+
+  // Add to allStudents
+  allStudents.unshift(studentObj);
+
+  // Persist to localStorage
+  try {
+    let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (!Array.isArray(localList)) localList = [];
+    localList.unshift(studentObj);
+    localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
+  } catch(err) {}
+
+  // Attempt local server save
+  try {
+    await fetch('/api/register-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(studentObj)
+    });
+  } catch(err) {}
+
+  closeModal('addStudentModal');
+  renderTable();
+  showToast(`✅ ${fullName} added to the roster!`);
+}
+
+// DELETE STUDENT
+async function deleteStudentRecord(id) {
+  const std = allStudents.find(s => s.id === id);
+  const name = std ? std.fullName : 'this student';
+  if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
+
+  allStudents = allStudents.filter(s => s.id !== id);
+
+  // Remove from localStorage
+  try {
+    let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (Array.isArray(localList)) {
+      localList = localList.filter(s => s.id !== id);
+      localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
+    }
+  } catch(err) {}
+
+  renderTable();
+  showToast(`🗑️ ${name} removed from roster.`);
+}
+
+// CLOUD SYNC CONFIGURATION
+function openCloudSyncModal() {
+  const cur = localStorage.getItem('ensb_cloud_sync_url') || '';
+  document.getElementById('cloudSyncUrlInput').value = cur;
+  document.getElementById('cloudSyncModal').classList.add('active');
+}
+
+function saveCloudSyncUrl() {
+  const url = document.getElementById('cloudSyncUrlInput').value.trim();
+  if (!url) {
+    alert('Please enter a valid Google Apps Script Web App URL.');
+    return;
+  }
+  localStorage.setItem('ensb_cloud_sync_url', url);
+  closeModal('cloudSyncModal');
+  showToast('☁️ Google Sheets Cloud Sync connected!');
+  fetchTeacherStudents(true);
+}
+
+function clearCloudSync() {
+  localStorage.removeItem('ensb_cloud_sync_url');
+  document.getElementById('cloudSyncUrlInput').value = '';
+  closeModal('cloudSyncModal');
+  showToast('Cloud Sync disconnected.');
+}
+
+// CLIENT-SIDE EXPORTS (100% Works on GitHub Pages, offline, and mobile)
 function exportToExcel(format = 'xlsx') {
   if (allStudents.length === 0) {
     alert('No students to export.');
@@ -850,8 +1195,31 @@ function exportToExcel(format = 'xlsx') {
   }
 
   if (format === 'csv') {
-    window.location.href = `/api/export-students-csv?key=${activeKey}`;
-    showToast('📥 Downloading CSV file...');
+    let csvContent = '\uFEFF'; // UTF-8 BOM for Microsoft Excel compatibility
+    csvContent += 'No.,Full Name,Email Address,Wilaya,Group,Phone Number,Registration Date\r\n';
+    allStudents.forEach((s, idx) => {
+      const row = [
+        idx + 1,
+        `"${(s.fullName || '').replace(/"/g, '""')}"`,
+        `"${(s.email || '').replace(/"/g, '""')}"`,
+        `"${(s.wilaya || '').replace(/"/g, '""')}"`,
+        `"${(s.group || 'Group 05').replace(/"/g, '""')}"`,
+        `"${(s.phone || '').replace(/"/g, '""')}"`,
+        `"${(s.registeredAt || '').replace(/"/g, '""')}"`
+      ];
+      csvContent += row.join(',') + '\r\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ENSB_PEM2_Group05_Student_Directory.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📥 CSV file downloaded successfully!');
   } else {
     // Formatted HTML Excel Workbook (.xls)
     let excelHTML = `
@@ -921,6 +1289,7 @@ function copyStudentLink() {
 
 function showToast(msg) {
   const t = document.getElementById('toastNotification');
+  if (!t) return;
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3200);
@@ -935,6 +1304,35 @@ function escapeHTML(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+// REALTIME LISTENERS ACROSS TABS
+try {
+  if ('BroadcastChannel' in window) {
+    const channel = new BroadcastChannel('ensb_roster_channel');
+    channel.onmessage = (event) => {
+      if (event.data && event.data.type === 'NEW_REGISTRATION' && event.data.student) {
+        const newStd = event.data.student;
+        const exists = allStudents.findIndex(s => 
+          (s.email && s.email.toLowerCase() === (newStd.email || '').toLowerCase()) ||
+          (s.fullName && s.fullName.toLowerCase() === (newStd.fullName || '').toLowerCase())
+        );
+        if (exists >= 0) {
+          allStudents[exists] = { ...allStudents[exists], ...newStd };
+        } else {
+          allStudents.unshift(newStd);
+        }
+        renderTable();
+        showToast(`🎉 New registration received: ${newStd.fullName}!`);
+      }
+    };
+  }
+} catch(e) {}
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'ensb_registered_students') {
+    fetchTeacherStudents();
+  }
+});
 </script>
 </body>
 </html>
