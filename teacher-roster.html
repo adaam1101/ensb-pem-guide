@@ -507,67 +507,95 @@ body {
   .letterhead-top { justify-content: center; text-align: center; }
   .toolbar-banner { flex-direction: column; align-items: stretch; }
   .card-header-bar { flex-direction: column; align-items: stretch; }
-  .btn-del {
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    color: var(--danger);
-    cursor: pointer;
-    padding: 4px 8px;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-  .btn-del:hover {
-    background: #FEE2E2;
-    border-color: #FCA5A5;
-  }
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(4px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 16px;
-  }
-  .modal-overlay.active {
-    display: flex;
-  }
-  .modal-card {
-    background: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-    max-width: 520px;
-    width: 100%;
-    padding: 24px;
-    position: relative;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 12px;
-  }
-  .modal-header h3 {
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--text-main);
-    margin: 0;
-  }
-  .modal-close {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: var(--text-muted);
-  }
+}
+
+.btn-del {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--danger);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.btn-del:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
+.wilaya-select-direct {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  max-width: 180px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+.wilaya-select-direct:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.wilaya-select-direct.assigned {
+  border-color: var(--primary);
+  background: var(--bg-card-subtle);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  max-width: 520px;
+  width: 100%;
+  padding: 24px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.modal-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-muted);
 }
 </style>
 </head>
@@ -1050,25 +1078,22 @@ function renderTable() {
       ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
       : nameParts[0].slice(0, 2).toUpperCase();
 
-    let wilayaBadge = '';
-    if (s.wilaya && s.wilaya.trim()) {
-      const wilayaParts = s.wilaya.split(' - ');
-      const code = wilayaParts[0] || 'DZ';
-      const name = wilayaParts[1] || s.wilaya;
-      wilayaBadge = `
-        <span class="wilaya-badge" style="cursor:pointer;" onclick="openEditWilayaModal('${escapeHTML(s.id)}')" title="Click to edit Wilaya">
-          <span class="wilaya-code">${escapeHTML(code)}</span>
-          <span>${escapeHTML(name)}</span>
-          <span style="font-size:10px;opacity:0.6;margin-left:4px;">✏️</span>
-        </span>
-      `;
-    } else {
-      wilayaBadge = `
-        <button type="button" class="btn btn-outline btn-sm" style="font-size:11px;padding:3px 8px;border-style:dashed;color:var(--primary);border-color:var(--primary);background:var(--bg-card-subtle);cursor:pointer;" onclick="openEditWilayaModal('${escapeHTML(s.id)}')">
-          📍 Set Wilaya +
-        </button>
-      `;
-    }
+    const wilayaOpts = ALGERIAN_WILAYAS.map(w => 
+      `<option value="${w}" ${s.wilaya === w ? 'selected' : ''}>${w}</option>`
+    ).join('');
+
+    const isAssigned = Boolean(s.wilaya && s.wilaya.trim());
+    const selectClass = isAssigned ? 'wilaya-select-direct assigned' : 'wilaya-select-direct';
+
+    const wilayaBadge = `
+      <div style="display:inline-flex;align-items:center;gap:6px;">
+        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id)}', this.value)">
+          <option value="">📍 Select Wilaya...</option>
+          ${wilayaOpts}
+        </select>
+        ${isAssigned ? '<span style="color:var(--primary);font-size:14px;font-weight:bold;" title="Wilaya set">✓</span>' : ''}
+      </div>
+    `;
 
     let dateStr = '—';
     if (s.registeredAt) {
@@ -1116,7 +1141,59 @@ function renderTable() {
   });
 }
 
-// EDIT STUDENT WILAYA
+// DIRECT INLINE WILAYA UPDATE (Instant, 0 Modals, Works on All Phones)
+async function updateWilayaDirect(id, newWilaya) {
+  const std = allStudents.find(s => s.id === id);
+  if (!std) return;
+
+  std.wilaya = newWilaya;
+
+  // 1. Persist to localStorage
+  try {
+    let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (!Array.isArray(localList)) localList = [];
+    const idx = localList.findIndex(s => s.id === id || (s.matricule && s.matricule === std.matricule));
+    if (idx >= 0) {
+      localList[idx].wilaya = newWilaya;
+    } else {
+      localList.push({ ...std, wilaya: newWilaya });
+    }
+    localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
+  } catch(err) {}
+
+  // 2. Attempt local server save
+  try {
+    await fetch('/api/register-student', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(std)
+    });
+  } catch(err) {}
+
+  // 3. Broadcast to other open tabs
+  try {
+    if ('BroadcastChannel' in window) {
+      const bc = new BroadcastChannel('ensb_roster_channel');
+      bc.postMessage({ type: 'WILAYA_UPDATED', id, wilaya: newWilaya });
+      bc.close();
+    }
+  } catch(err) {}
+
+  // 4. Update KPI counters
+  const uniqueWilayas = new Set(allStudents.map(s => s.wilaya).filter(w => w && w.trim()));
+  const wilayaEl = document.getElementById('statTotalWilayas');
+  if (wilayaEl) wilayaEl.textContent = uniqueWilayas.size;
+
+  renderTable();
+
+  if (newWilaya) {
+    showToast(`✅ ${std.fullName} set to ${newWilaya}`);
+  } else {
+    showToast(`Wilaya cleared for ${std.fullName}`);
+  }
+}
+
+// EDIT STUDENT WILAYA MODAL (Alternative)
 function openEditWilayaModal(id) {
   const std = allStudents.find(s => s.id === id);
   if (!std) return;
@@ -1141,37 +1218,8 @@ async function handleSaveWilaya(e) {
   e.preventDefault();
   const id = document.getElementById('editWilayaStudentId').value;
   const newWilaya = document.getElementById('editWilayaSelect').value;
-
-  const std = allStudents.find(s => s.id === id);
-  if (!std) return;
-
-  std.wilaya = newWilaya;
-
-  // Persist to localStorage
-  try {
-    let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
-    if (!Array.isArray(localList)) localList = [];
-    const idx = localList.findIndex(s => s.id === id || (s.email && s.email.toLowerCase() === std.email.toLowerCase()));
-    if (idx >= 0) {
-      localList[idx].wilaya = newWilaya;
-    } else {
-      localList.push(std);
-    }
-    localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
-  } catch(err) {}
-
-  // Attempt server save (if server running)
-  try {
-    await fetch('/api/register-student', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(std)
-    });
-  } catch(err) {}
-
+  await updateWilayaDirect(id, newWilaya);
   closeModal('editWilayaModal');
-  renderTable();
-  showToast(`✅ Wilaya set to ${newWilaya} for ${std.fullName}!`);
 }
 
 function handleFilter() {
