@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Teacher Portal — Official Class Roster | Group 05 | ENS Bouzareah</title>
 <link rel="icon" type="image/webp" href="logo.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -912,6 +915,19 @@ body {
         <button type="submit" class="btn btn-primary btn-sm">Save Wilaya</button>
       </div>
     </form>
+<!-- Modal: Confirm Delete Student -->
+<div id="deleteConfirmModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 410px; text-align: center;">
+    <div style="font-size: 38px; margin-bottom: 8px;">🗑️</div>
+    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">Remove Student?</h3>
+    <div id="deleteConfirmStudentName" style="font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 8px;"></div>
+    <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
+      This student will be permanently removed from the roster and will not reappear on refresh.
+    </p>
+    <div style="display:flex; justify-content:center; gap:10px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('deleteConfirmModal')">Cancel</button>
+      <button type="button" class="btn btn-sm" style="background:#DC2626; color:#FFF; border:none; padding:8px 16px; font-weight:700; border-radius:var(--radius-sm); cursor:pointer;" onclick="executeConfirmDelete()">Remove Permanently</button>
+    </div>
   </div>
 </div>
 
@@ -1031,7 +1047,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
   // 3. Fallback to data.json (relative path, works on GitHub Pages & localhost)
   if (fetchedList.length === 0) {
     try {
-      const res = await fetch('data.json', { cache: 'no-store' });
+      const res = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.students)) {
@@ -1045,7 +1061,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
   // 4. Fallback to GitHub Raw data.json
   if (fetchedList.length === 0) {
     try {
-      const res = await fetch('https://raw.githubusercontent.com/adaam1101/ensb-pem-guide/main/data.json', { cache: 'no-store' });
+      const res = await fetch('https://raw.githubusercontent.com/adaam1101/ensb-pem-guide/main/data.json?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.students)) {
@@ -1073,12 +1089,12 @@ async function fetchTeacherStudents(showToastMsg = false) {
 
   const isDeleted = (s) => {
     if (!s) return false;
-    const sId = (s.id || '').toLowerCase().trim();
-    const sMat = (s.matricule || '').toLowerCase().trim();
-    const sEmail = (s.email || '').toLowerCase().trim();
-    const sName = (s.fullName || '').toLowerCase().trim();
+    const sId = String(s.id || '').toLowerCase().trim();
+    const sMat = String(s.matricule || '').toLowerCase().trim();
+    const sEmail = String(s.email || '').toLowerCase().trim();
+    const sName = String(s.fullName || '').toLowerCase().trim();
 
-    return (
+    return Boolean(
       (sId && deletedList.includes(sId)) ||
       (sMat && deletedList.includes(sMat)) ||
       (sEmail && deletedList.includes(sEmail)) ||
@@ -1220,7 +1236,7 @@ function renderTable() {
         ${dateStr}
       </td>
       <td style="text-align:right;">
-        <button class="btn-del" onclick="deleteStudentRecord('${escapeHTML(s.id)}')" title="Remove student">🗑️</button>
+        <button type="button" class="btn-del" data-id="${escapeHTML(s.id)}" onclick="handleDeleteClick(this)" title="Remove student">🗑️</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1373,58 +1389,85 @@ async function handleManualAddStudent(e) {
   showToast(`✅ ${fullName} added to the roster!`);
 }
 
-// DELETE STUDENT
-async function deleteStudentRecord(id) {
-  const std = allStudents.find(s => s.id === id);
-  const name = std ? std.fullName : 'this student';
-  if (!confirm(`Are you sure you want to remove ${name} from the roster?`)) return;
+// DELETE STUDENT SYSTEM (In-Page Modal, Immune to Native Dialog Blocking, Persistent Across All Refreshes)
+let pendingDeleteStudent = null;
 
-  // 1. Add to permanent deleted blacklist so it NEVER reappears on refresh
+function handleDeleteClick(btn) {
+  const id = btn.getAttribute('data-id');
+  const std = allStudents.find(s => String(s.id) === String(id));
+  if (!std) return;
+  pendingDeleteStudent = std;
+  const nameEl = document.getElementById('deleteConfirmStudentName');
+  if (nameEl) {
+    nameEl.textContent = std.fullName + (std.matricule ? ` • ID: ${std.matricule}` : '');
+  }
+  document.getElementById('deleteConfirmModal').classList.add('active');
+}
+
+function deleteStudentRecord(id) {
+  const std = allStudents.find(s => String(s.id) === String(id));
+  if (std) {
+    pendingDeleteStudent = std;
+    const nameEl = document.getElementById('deleteConfirmStudentName');
+    if (nameEl) {
+      nameEl.textContent = std.fullName + (std.matricule ? ` • ID: ${std.matricule}` : '');
+    }
+    document.getElementById('deleteConfirmModal').classList.add('active');
+  }
+}
+
+async function executeConfirmDelete() {
+  if (!pendingDeleteStudent) return;
+  const std = pendingDeleteStudent;
+  const name = std.fullName || 'Student';
+  const id = std.id || '';
+
+  // 1. Add ALL identifiers to permanent blacklist in localStorage
   try {
     let deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
     if (!Array.isArray(deletedList)) deletedList = [];
-    if (id && !deletedList.includes(id)) deletedList.push(id);
-    if (std && std.matricule) {
-      const mat = std.matricule.toLowerCase().trim();
-      if (!deletedList.includes(mat)) deletedList.push(mat);
-    }
-    if (std && std.email) {
-      const em = std.email.toLowerCase().trim();
-      if (!deletedList.includes(em)) deletedList.push(em);
-    }
-    if (std && std.fullName) {
-      const nm = std.fullName.toLowerCase().trim();
-      if (!deletedList.includes(nm)) deletedList.push(nm);
-    }
+
+    const toBlacklist = [
+      std.id,
+      std.matricule,
+      std.email,
+      std.fullName
+    ].filter(Boolean).map(x => String(x).toLowerCase().trim());
+
+    deletedList = Array.from(new Set([...deletedList, ...toBlacklist]));
     localStorage.setItem('ensb_deleted_students', JSON.stringify(deletedList));
   } catch(err) {}
 
-  // 2. Remove from active localStorage registrations
+  // 2. Remove from active registered list in localStorage
   try {
     let localList = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
     if (Array.isArray(localList)) {
       localList = localList.filter(s => {
-        if (s.id === id) return false;
-        if (std && std.matricule && s.matricule && s.matricule === std.matricule) return false;
-        if (std && std.email && s.email && s.email.toLowerCase() === std.email.toLowerCase()) return false;
-        if (std && std.fullName && s.fullName && s.fullName.toLowerCase() === std.fullName.toLowerCase()) return false;
+        const sId = String(s.id || '').toLowerCase().trim();
+        const sMat = String(s.matricule || '').toLowerCase().trim();
+        const sEmail = String(s.email || '').toLowerCase().trim();
+        const sName = String(s.fullName || '').toLowerCase().trim();
+        if (std.id && sId === String(std.id).toLowerCase().trim()) return false;
+        if (std.matricule && sMat === String(std.matricule).toLowerCase().trim()) return false;
+        if (std.email && sEmail === String(std.email).toLowerCase().trim()) return false;
+        if (std.fullName && sName === String(std.fullName).toLowerCase().trim()) return false;
         return true;
       });
       localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
     }
   } catch(err) {}
 
-  // 3. Attempt server deletion (works if server.py is running)
+  // 3. Attempt local Python server deletion (updates data.json on disk)
   try {
     await fetch('/api/delete-student', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Teacher-Key': activeKey },
-      body: JSON.stringify({ 
-        key: activeKey, 
-        id: id, 
-        matricule: std?.matricule || '', 
-        email: std?.email || '', 
-        fullName: std?.fullName || '' 
+      body: JSON.stringify({
+        key: activeKey,
+        id: std.id || '',
+        matricule: std.matricule || '',
+        email: std.email || '',
+        fullName: std.fullName || ''
       })
     });
   } catch(err) {}
@@ -1433,14 +1476,17 @@ async function deleteStudentRecord(id) {
   try {
     if ('BroadcastChannel' in window) {
       const bc = new BroadcastChannel('ensb_roster_channel');
-      bc.postMessage({ type: 'STUDENT_DELETED', id, matricule: std?.matricule, email: std?.email, fullName: std?.fullName });
+      bc.postMessage({ type: 'STUDENT_DELETED', id: std.id, matricule: std.matricule, email: std.email, fullName: std.fullName });
       bc.close();
     }
   } catch(err) {}
 
-  allStudents = allStudents.filter(s => s.id !== id);
+  // 5. Update memory & UI
+  allStudents = allStudents.filter(s => String(s.id) !== String(id));
+  closeModal('deleteConfirmModal');
+  pendingDeleteStudent = null;
   renderTable();
-  showToast(`🗑️ ${name} permanently removed from roster.`);
+  showToast(`🗑️ ${name} removed permanently from roster.`);
 }
 
 // CLOUD SYNC CONFIGURATION
