@@ -1063,6 +1063,32 @@ async function fetchTeacherStudents(showToastMsg = false) {
     if (!Array.isArray(localStudents)) localStudents = [];
   } catch(e) {}
 
+  // 6. Filter out any student in permanent deleted blacklist (never reappears on refresh)
+  let deletedList = [];
+  try {
+    deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
+    if (!Array.isArray(deletedList)) deletedList = [];
+    deletedList = deletedList.map(item => String(item).toLowerCase().trim());
+  } catch(e) {}
+
+  const isDeleted = (s) => {
+    if (!s) return false;
+    const sId = (s.id || '').toLowerCase().trim();
+    const sMat = (s.matricule || '').toLowerCase().trim();
+    const sEmail = (s.email || '').toLowerCase().trim();
+    const sName = (s.fullName || '').toLowerCase().trim();
+
+    return (
+      (sId && deletedList.includes(sId)) ||
+      (sMat && deletedList.includes(sMat)) ||
+      (sEmail && deletedList.includes(sEmail)) ||
+      (sName && deletedList.includes(sName))
+    );
+  };
+
+  fetchedList = fetchedList.filter(s => !isDeleted(s));
+  localStudents = localStudents.filter(s => !isDeleted(s));
+
   // Merge map by matricule, email, or full name
   const map = new Map();
   fetchedList.forEach(s => {
@@ -1081,7 +1107,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
     }
   });
 
-  allStudents = Array.from(map.values());
+  allStudents = Array.from(map.values()).filter(s => !isDeleted(s));
   renderTable();
 
   if (refreshBtn) refreshBtn.textContent = '🔄 Refresh';
@@ -1358,6 +1384,10 @@ async function deleteStudentRecord(id) {
     let deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
     if (!Array.isArray(deletedList)) deletedList = [];
     if (id && !deletedList.includes(id)) deletedList.push(id);
+    if (std && std.matricule) {
+      const mat = std.matricule.toLowerCase().trim();
+      if (!deletedList.includes(mat)) deletedList.push(mat);
+    }
     if (std && std.email) {
       const em = std.email.toLowerCase().trim();
       if (!deletedList.includes(em)) deletedList.push(em);
@@ -1375,6 +1405,7 @@ async function deleteStudentRecord(id) {
     if (Array.isArray(localList)) {
       localList = localList.filter(s => {
         if (s.id === id) return false;
+        if (std && std.matricule && s.matricule && s.matricule === std.matricule) return false;
         if (std && std.email && s.email && s.email.toLowerCase() === std.email.toLowerCase()) return false;
         if (std && std.fullName && s.fullName && s.fullName.toLowerCase() === std.fullName.toLowerCase()) return false;
         return true;
@@ -1388,8 +1419,23 @@ async function deleteStudentRecord(id) {
     await fetch('/api/delete-student', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Teacher-Key': activeKey },
-      body: JSON.stringify({ key: activeKey, id: id, email: std?.email || '' })
+      body: JSON.stringify({ 
+        key: activeKey, 
+        id: id, 
+        matricule: std?.matricule || '', 
+        email: std?.email || '', 
+        fullName: std?.fullName || '' 
+      })
     });
+  } catch(err) {}
+
+  // 4. Broadcast deletion to other open tabs
+  try {
+    if ('BroadcastChannel' in window) {
+      const bc = new BroadcastChannel('ensb_roster_channel');
+      bc.postMessage({ type: 'STUDENT_DELETED', id, matricule: std?.matricule, email: std?.email, fullName: std?.fullName });
+      bc.close();
+    }
   } catch(err) {}
 
   allStudents = allStudents.filter(s => s.id !== id);

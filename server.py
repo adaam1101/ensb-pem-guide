@@ -429,8 +429,11 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
 
             student_id = str(data.get("id", "")).strip()
             student_email = str(data.get("email", "")).strip().lower()
-            if not student_id and not student_email:
-                self._send_json({"error": "Missing student ID or email"}, 400)
+            student_matricule = str(data.get("matricule", "")).strip().lower()
+            student_name = str(data.get("fullName", "")).strip().lower()
+
+            if not student_id and not student_email and not student_matricule and not student_name:
+                self._send_json({"error": "Missing student identifiers"}, 400)
                 return
 
             try:
@@ -442,7 +445,10 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
 
                 db["students"] = [
                     s for s in db.get("students", []) 
-                    if s.get("id") != student_id and (not student_email or s.get("email", "").lower() != student_email)
+                    if (not student_id or s.get("id") != student_id)
+                    and (not student_matricule or str(s.get("matricule", "")).strip().lower() != student_matricule)
+                    and (not student_email or s.get("email", "").lower() != student_email)
+                    and (not student_name or s.get("fullName", "").lower() != student_name)
                 ]
 
                 with open(DATA_FILE, "w", encoding="utf-8") as f:
