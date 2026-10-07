@@ -3,18 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redirecting...</title>
+<title>ENS Bouzareah — Class Directory</title>
 <script>
-const params = new URLSearchParams(window.location.search);
-const key = params.get('key');
-if (key === 'ensb2026' || params.get('view') === 'teacher') {
-  window.location.replace('teacher-roster.html' + (key ? '?key=' + key : ''));
-} else {
-  window.location.replace('register.html');
-}
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const key = params.get('key');
+  if (key) {
+    // If access key is present, forward to teacher-roster.html with hash and search
+    window.location.replace('teacher-roster.html' + window.location.search + window.location.hash);
+  } else {
+    // Default visitors go to official student registration form
+    window.location.replace('register.html');
+  }
+})();
 </script>
 </head>
 <body style="font-family:sans-serif; text-align:center; padding-top:60px; color:#475569;">
-  <p>Redirecting to the <a href="register.html" style="color:#0F4D2A; font-weight:bold;">Student Registration Form</a>...</p>
+  <p>Redirecting to <a href="register.html" style="color:#0F4D2A; font-weight:bold;">Student Registration Portal</a>...</p>
 </body>
 </html>

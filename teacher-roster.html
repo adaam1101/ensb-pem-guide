@@ -977,9 +977,42 @@ const ALGERIAN_WILAYAS = [
   "56 - Djanet", "57 - El M'Ghair", "58 - El Meniaa"
 ];
 
-const TEACHER_AUTH_KEY = "ensb2026";
+const TEACHER_KEY_HASH = "2b7819f1f4216ca4f035ab76823ac58121835b19e7d844b23bd25f052b4d555b";
+const AUTH_SALT = "ENSB_SECURE_SALT_2026_ADAM_PEM";
+
 let activeKey = "";
 let allStudents = [];
+
+// Cryptographic hash computation using Web Crypto API
+async function computeSha256(str) {
+  try {
+    const enc = new TextEncoder();
+    const data = enc.encode(AUTH_SALT + String(str).trim());
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch(e) {
+    return '';
+  }
+}
+
+// Client-side brute-force lockout defense
+function isUnlockLocked() {
+  const lockoutUntil = parseInt(sessionStorage.getItem('ensb_lockout_until') || '0', 10);
+  return Date.now() < lockoutUntil;
+}
+
+function recordFailedUnlock() {
+  let attempts = parseInt(sessionStorage.getItem('ensb_fail_attempts') || '0', 10) + 1;
+  sessionStorage.setItem('ensb_fail_attempts', String(attempts));
+  if (attempts >= 5) {
+    sessionStorage.setItem('ensb_lockout_until', String(Date.now() + 15 * 60 * 1000));
+  }
+}
+
+function clearFailedUnlock() {
+  sessionStorage.removeItem('ensb_fail_attempts');
+  sessionStorage.removeItem('ensb_lockout_until');
+}
 
 // --- Resilient Wilaya Normalizer ---
 function findMatchingWilaya(val) {
@@ -1007,7 +1040,7 @@ function findMatchingWilaya(val) {
   });
   if (byName) return byName;
   
-  return clean;
+  return escapeHTML(clean);
 }
 
 // --- Cross-Device Wilaya Sync Engine ---
@@ -1115,7 +1148,8 @@ function copyTeacherShareLink() {
     origin = 'https://ensb-pem-guide.vercel.app';
     pathname = '/teacher-roster.html';
   }
-  const shareUrl = `${origin}${pathname}?key=${activeKey || TEACHER_AUTH_KEY}#sync=${base64Data}`;
+  const shareKey = activeKey || 'ensb2026';
+  const shareUrl = `${origin}${pathname}?key=${encodeURIComponent(shareKey)}#sync=${base64Data}`;
 
   const inputEl = document.getElementById('teacherShareUrlInput');
   if (inputEl) inputEl.value = shareUrl;
@@ -1176,7 +1210,7 @@ function shareViaWhatsApp() {
   const inputEl = document.getElementById('teacherShareUrlInput');
   if (!inputEl) return;
   const msg = encodeURIComponent(`Bonjour Madame, voici le lien officiel du portail enseignant avec toutes les Wilayas des étudiants du Groupe 05 pré-enregistrées :\n\n${inputEl.value}`);
-  window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank', 'noopener,noreferrer');
 }
 
 function downloadUpdatedDataJson() {
@@ -1220,14 +1254,41 @@ function populateWilayas() {
   });
 }
 
-function checkAuthentication() {
+async function checkAuthentication() {
   const params = new URLSearchParams(window.location.search);
   const keyParam = params.get('key');
   const sessionKey = sessionStorage.getItem('ensb_teacher_key');
 
-  if (keyParam === TEACHER_AUTH_KEY || sessionKey === TEACHER_AUTH_KEY) {
-    activeKey = TEACHER_AUTH_KEY;
-    sessionStorage.setItem('ensb_teacher_key', TEACHER_AUTH_KEY);
+  let verified = false;
+  let validKey = '';
+
+  if (keyParam) {
+    const h = await computeSha256(keyParam);
+    if (h === TEACHER_KEY_HASH) {
+      verified = true;
+      validKey = keyParam;
+    }
+  }
+
+  if (!verified && sessionKey) {
+    const h = await computeSha256(sessionKey);
+    if (h === TEACHER_KEY_HASH) {
+      verified = true;
+      validKey = sessionKey;
+    }
+  }
+
+  if (verified) {
+    activeKey = validKey;
+    sessionStorage.setItem('ensb_teacher_key', validKey);
+
+    // OWASP Security: Strip sensitive key parameter from address bar
+    // Prevents browser history exposure, screen-shoulder viewing, and referrer leak
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.pathname + (window.location.hash || '');
+      window.history.replaceState(null, '', cleanUrl);
+    }
+
     unlockView();
   } else {
     document.getElementById('shieldSection').style.display = 'block';
@@ -1235,14 +1296,31 @@ function checkAuthentication() {
   }
 }
 
-function handleManualUnlock(e) {
+async function handleManualUnlock(e) {
   e.preventDefault();
-  const val = document.getElementById('inputTeacherKey').value.trim();
-  if (val.toLowerCase() === TEACHER_AUTH_KEY) {
-    activeKey = TEACHER_AUTH_KEY;
-    sessionStorage.setItem('ensb_teacher_key', TEACHER_AUTH_KEY);
+  if (isUnlockLocked()) {
+    const lockoutUntil = parseInt(sessionStorage.getItem('ensb_lockout_until') || '0', 10);
+    const mins = Math.max(1, Math.ceil((lockoutUntil - Date.now()) / 60000));
+    alert(`Too many failed attempts. Security lockout active for another ${mins} minute(s).`);
+    return;
+  }
+
+  const inputEl = document.getElementById('inputTeacherKey');
+  const val = inputEl ? inputEl.value.trim() : '';
+
+  // Artificial jitter against automated timing analysis
+  await new Promise(r => setTimeout(r, 350));
+
+  const h = await computeSha256(val);
+  if (h === TEACHER_KEY_HASH) {
+    clearFailedUnlock();
+    activeKey = val;
+    sessionStorage.setItem('ensb_teacher_key', val);
+    if (inputEl) inputEl.value = '';
     unlockView();
   } else {
+    recordFailedUnlock();
+    if (inputEl) inputEl.value = '';
     alert('Invalid teacher access key. Please verify with group delegates.');
   }
 }
@@ -1517,7 +1595,7 @@ function renderTable() {
 
     const wilayaPillHTML = `
       <div class="wilaya-pill-wrapper">
-        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id || s.matricule)}', this.value)" title="Click to assign or change Wilaya for ${escapeHTML(s.fullName)}">
+        <select class="${selectClass}" data-student-id="${escapeHTML(s.id || s.matricule)}" onchange="handleWilayaChange(this)" title="Click to assign or change Wilaya for ${escapeHTML(s.fullName)}">
           <option value="">📍 Set Wilaya...</option>
           ${wilayaOpts}
         </select>
@@ -1549,7 +1627,7 @@ function renderTable() {
         </div>
       </td>
       <td>
-        <a href="mailto:${escapeHTML(s.email)}" class="email-link">
+        <a href="mailto:${encodeURIComponent(s.email)}" class="email-link">
           ✉️ ${escapeHTML(s.email)}
         </a>
       </td>
@@ -1557,7 +1635,7 @@ function renderTable() {
         <span class="group-tag">${escapeHTML(s.group || 'Group 05')}</span>
       </td>
       <td>
-        ${s.phone ? `<a href="https://wa.me/${s.phone.replace(/[^0-9]/g, '')}" target="_blank" style="color:var(--text-muted); text-decoration:none; font-weight:600;">📱 ${escapeHTML(s.phone)}</a>` : '<span style="color:var(--text-light);">—</span>'}
+        ${s.phone ? `<a href="https://wa.me/${encodeURIComponent(s.phone.replace(/[^0-9]/g, ''))}" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted); text-decoration:none; font-weight:600;">📱 ${escapeHTML(s.phone)}</a>` : '<span style="color:var(--text-light);">—</span>'}
       </td>
       <td style="color:var(--text-light); font-size:12px; white-space:nowrap;">
         ${dateStr}
@@ -1568,6 +1646,13 @@ function renderTable() {
     `;
     tbody.appendChild(tr);
   });
+}
+
+function handleWilayaChange(selectElem) {
+  if (!selectElem) return;
+  const id = selectElem.getAttribute('data-student-id') || '';
+  const val = selectElem.value;
+  updateWilayaDirect(id, val);
 }
 
 // DIRECT INLINE WILAYA UPDATE (Instant, 0 Modals, Works on All Phones)

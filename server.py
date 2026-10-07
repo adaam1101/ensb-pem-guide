@@ -111,18 +111,27 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
         # Prevent server banner fingerprinting
         return "ENSB-Gateway/2.0"
 
-    def send_security_headers(self):
+    def list_directory(self, path):
+        # OWASP Pen-test requirement: Disable directory browsing/indexing
+        self._send_json({"error": "Forbidden: Directory listing disabled"}, 403)
+        return None
+
+    def end_headers(self):
+        # Enterprise-grade security headers applied to 100% of responses
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("X-XSS-Protection", "1; mode=block")
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Requested-With")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()")
+        self.send_header("Content-Security-Policy", "default-src 'self' 'unsafe-inline' https:; img-src 'self' data: https: blob:; font-src 'self' https: data:; media-src 'self' https:; connect-src 'self' https:; frame-ancestors 'none'; object-src 'none'; base-uri 'self';")
+        self.send_header("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, Authorization, X-Teacher-Key, X-Admin-Password")
+        super().end_headers()
 
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_security_headers()
         self.send_header("Content-Length", "0")
         self.end_headers()
 
@@ -137,14 +146,14 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({"error": "Forbidden: Path traversal blocked"}, 403)
             return
 
-        blocked_extensions = [".py", ".hash", ".secret", ".txt", ".git", ".bak", ".sh", ".env", ".md", ".json.bak"]
+        blocked_extensions = [".py", ".hash", ".secret", ".txt", ".git", ".bak", ".sh", ".env", ".md", ".json.bak", ".log"]
         for ext in blocked_extensions:
             if clean_path.lower().endswith(ext) or ext in clean_path.lower():
                 self._send_json({"error": "Forbidden: Access denied to system files"}, 403)
                 return
 
-        # 2. API: Serve data.json safely (Hide students array from public syllabus fetch unless teacher/admin)
-        if clean_path == "/api/data":
+        # 2. API: Serve data.json safely (Intercept /data.json, /data, /api/data to strip students array for unauthenticated requests)
+        if clean_path in ("/api/data", "/data.json", "/data"):
             if os.path.exists(DATA_FILE):
                 try:
                     with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -162,7 +171,6 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-            self.send_security_headers()
             self.send_header("Content-Length", str(len(content)))
             self.end_headers()
             self.wfile.write(content)
@@ -237,7 +245,6 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "text/csv; charset=utf-8")
             self.send_header("Content-Disposition", 'attachment; filename="ENSB_PEM2_Group05_Students.csv"')
             self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_security_headers()
             self.send_header("Content-Length", str(len(csv_bytes)))
             self.end_headers()
             self.wfile.write(csv_bytes)
@@ -467,7 +474,6 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_security_headers()
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)

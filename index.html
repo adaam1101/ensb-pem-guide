@@ -1658,7 +1658,7 @@ input:checked + .switch-slider:before {
   </a>
   <div class="header-actions">
     <!-- Quick WhatsApp button for developer -->
-    <a href="https://wa.me/213795523399" target="_blank" rel="noopener" class="icon-btn" title="Contact Adam on WhatsApp" aria-label="WhatsApp">
+    <a href="https://wa.me/213795523399" target="_blank" rel="noopener noreferrer" class="icon-btn" title="Contact Adam on WhatsApp" aria-label="WhatsApp">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
     </a>
     <!-- Theme Toggle -->
@@ -1889,7 +1889,7 @@ input:checked + .switch-slider:before {
       <div class="dev-dept">2nd Year English (PEM)<br>École Normale Supérieure de Bouzareah</div>
 
       <div class="dev-connect-buttons">
-        <a href="https://wa.me/213795523399" target="_blank" rel="noopener" class="dev-link-btn wa">
+        <a href="https://wa.me/213795523399" target="_blank" rel="noopener noreferrer" class="dev-link-btn wa">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
           WhatsApp : 0795523399
         </a>
@@ -1957,7 +1957,7 @@ input:checked + .switch-slider:before {
         <div class="section-title">Direct Contact</div>
       </div>
       <div class="dev-connect-buttons" style="margin-top:0">
-        <a href="https://wa.me/213795523399" target="_blank" rel="noopener" class="dev-link-btn wa">
+        <a href="https://wa.me/213795523399" target="_blank" rel="noopener noreferrer" class="dev-link-btn wa">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.81 13.47 3.81 11.91C3.81 7.37 7.5 3.67 12.05 3.67Z"/></svg>
           WhatsApp : 0795523399
         </a>
@@ -1982,7 +1982,7 @@ input:checked + .switch-slider:before {
           <div style="font-size:14px;font-weight:800;color:var(--text-main)">Fast WhatsApp Feedback</div>
           <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Message Adam Ameyoud directly</div>
         </div>
-        <a href="https://wa.me/213795523399?text=Hello%20Adam,%20feedback%20for%20the%202nd%20Year%20English%20Guide:" target="_blank" rel="noopener" class="btn btn-primary btn-sm">Chat Now</a>
+        <a href="https://wa.me/213795523399?text=Hello%20Adam,%20feedback%20for%20the%202nd%20Year%20English%20Guide:" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Chat Now</a>
       </div>
     </div>
 
@@ -3575,7 +3575,7 @@ function renderLessons() {
   container.innerHTML = filtered.map(l => {
     const fileType = (l.type || 'PDF').toLowerCase();
     const openHtml = l.url 
-      ? `<a href="${sanitize(l.url)}" target="_blank" rel="noopener" class="lesson-open-btn">Open</a>`
+      ? `<a href="${sanitizeUrl(l.url)}" target="_blank" rel="noopener noreferrer" class="lesson-open-btn">Open</a>`
       : `<button class="lesson-open-btn" style="opacity:0.4" disabled>Pending</button>`;
 
     return `
@@ -3829,6 +3829,16 @@ function sanitize(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+function sanitizeUrl(url) {
+  if (!url) return '#';
+  const clean = String(url).trim();
+  // Strictly permit safe web protocols, mailto, tel, relative paths or anchors
+  if (/^(?:https?:\/\/|mailto:|tel:|\/|#)/i.test(clean)) {
+    return clean.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  return '#';
 }
 
 /* --- LIVE SYNC WITH DATA.JSON (SERVER OR LOCAL ASSET) --- */

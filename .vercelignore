@@ -1,0 +1,10 @@
+server.py
+*.py
+*.secret
+*.bak
+*.log
+*.sh
+__pycache__
+.git
+.gitignore
+.env*
