@@ -1118,8 +1118,8 @@ function copyTeacherShareLink() {
   let origin = window.location.origin;
   let pathname = window.location.pathname;
   if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-    origin = 'https://adaam1101.github.io';
-    pathname = '/ensb-pem-guide/teacher-roster.html';
+    origin = 'https://ensb-pem-guide.vercel.app';
+    pathname = '/teacher-roster.html';
   }
   const shareUrl = `${origin}${pathname}?key=${activeKey || TEACHER_AUTH_KEY}#sync=${base64Data}`;
 
