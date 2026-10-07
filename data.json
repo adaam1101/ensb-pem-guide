@@ -113,15 +113,15 @@
       ]
     },
     {
-      "id": "ail",
-      "name": "AI in Learning",
-      "code": "AIL 208",
+      "id": "ict",
+      "name": "ICT",
+      "code": "ICT 208",
       "coef": 1,
       "semester": "s1",
       "lessons": [
         {
           "id": "ail_l1",
-          "title": "Educational Technology & AI Literacy in Language Pedagogy",
+          "title": "ICT Laboratory Tools & Educational Technology",
           "type": "PDF",
           "url": "",
           "date": "Semester 1"
@@ -286,7 +286,7 @@
       "id": "t_ict_faculty",
       "name": "Department Faculty",
       "title": "ICT Lab Instructors",
-      "module": "AI in Learning",
+      "module": "ICT",
       "email": "ict-lab@ensb.dz",
       "office": "Computer Center Lab 4 & 5"
     }
@@ -376,7 +376,7 @@
             "time": "14:30 - 16:00",
             "start": "14:30",
             "end": "16:00",
-            "subject": "AI in Learning (ICT)",
+            "subject": "ICT",
             "type": "TP / Lab",
             "teacher": "Department Faculty",
             "room": "Lab 5"
@@ -553,7 +553,7 @@
             "time": "10:00 - 11:30",
             "start": "10:00",
             "end": "11:30",
-            "subject": "AI in Learning (ICT)",
+            "subject": "ICT",
             "type": "TP / Lab",
             "teacher": "Department Faculty",
             "room": "Lab 2"
@@ -678,7 +678,7 @@
             "time": "08:30 - 10:00",
             "start": "08:30",
             "end": "10:00",
-            "subject": "AI in Learning (ICT)",
+            "subject": "ICT",
             "type": "TP / Lab",
             "teacher": "Department Faculty",
             "room": "Lab 5"
@@ -854,7 +854,7 @@
             "time": "10:00 - 11:30",
             "start": "10:00",
             "end": "11:30",
-            "subject": "AI in Learning (ICT)",
+            "subject": "ICT",
             "type": "TP / Lab",
             "teacher": "Department Faculty",
             "room": "Lab"
@@ -978,7 +978,7 @@
             "time": "10:00 - 11:30",
             "start": "10:00",
             "end": "11:30",
-            "subject": "AI in Learning (ICT)",
+            "subject": "ICT",
             "type": "TP / Lab",
             "teacher": "Department Faculty",
             "room": "Lab 4"
