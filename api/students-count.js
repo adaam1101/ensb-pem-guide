@@ -10,11 +10,13 @@ module.exports = (req, res) => {
     return res.status(200).end();
   }
 
-  const filePath = path.join(process.cwd(), 'data.json');
+  const studentsPath = path.join(process.cwd(), 'api', 'students-store.json');
   try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(raw);
-    const count = (data.students || []).length;
+    let count = 0;
+    if (fs.existsSync(studentsPath)) {
+      const arr = JSON.parse(fs.readFileSync(studentsPath, 'utf8'));
+      count = arr.length;
+    }
     return res.status(200).json({ total: count });
   } catch (err) {
     return res.status(500).json({ total: 0 });

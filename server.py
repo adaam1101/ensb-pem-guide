@@ -16,7 +16,29 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(BASE_DIR)
 
 DATA_FILE = os.path.join(BASE_DIR, "data.json")
+STUDENTS_FILE = os.path.join(BASE_DIR, "api", "students-store.json")
 PASS_FILE = os.path.join(BASE_DIR, ".admin_hash.secret")
+
+def load_students_list():
+    if os.path.exists(STUDENTS_FILE):
+        try:
+            with open(STUDENTS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                return d.get("students", [])
+        except Exception:
+            pass
+    return []
+
+def save_students_list(students):
+    os.makedirs(os.path.dirname(STUDENTS_FILE), exist_ok=True)
+    with open(STUDENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(students, f, indent=2, ensure_ascii=False)
 
 # Cryptographic salt
 SALT = "ENSB_SECURE_SALT_2026_ADAM_PEM"
@@ -159,9 +181,10 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                     with open(DATA_FILE, "r", encoding="utf-8") as f:
                         data_obj = json.load(f)
                     # Protect students data from unauthorized public view
-                    if not check_teacher_or_admin_auth(self, query_params):
-                        if "students" in data_obj:
-                            data_obj["students"] = []
+                    if check_teacher_or_admin_auth(self, query_params):
+                        data_obj["students"] = load_students_list()
+                    else:
+                        data_obj["students"] = []
                     content = json.dumps(data_obj, ensure_ascii=False, indent=2).encode("utf-8")
                 except Exception:
                     content = b"{}"
@@ -185,27 +208,13 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 }, 403)
                 return
 
-            students = []
-            if os.path.exists(DATA_FILE):
-                try:
-                    with open(DATA_FILE, "r", encoding="utf-8") as f:
-                        d = json.load(f)
-                        students = d.get("students", [])
-                except Exception:
-                    pass
+            students = load_students_list()
             self._send_json({"students": students, "total": len(students), "authenticated": True})
             return
 
         # 4. API: Public count of registrations (Safe count only, no personal names/emails)
         if clean_path == "/api/students-count":
-            total = 0
-            if os.path.exists(DATA_FILE):
-                try:
-                    with open(DATA_FILE, "r", encoding="utf-8") as f:
-                        d = json.load(f)
-                        total = len(d.get("students", []))
-                except Exception:
-                    pass
+            total = len(load_students_list())
             self._send_json({"total": total})
             return
 
@@ -217,14 +226,7 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 }, 403)
                 return
 
-            students = []
-            if os.path.exists(DATA_FILE):
-                try:
-                    with open(DATA_FILE, "r", encoding="utf-8") as f:
-                        d = json.load(f)
-                        students = d.get("students", [])
-                except Exception:
-                    pass
+            students = load_students_list()
             output = io.StringIO()
             writer = csv.writer(output, delimiter=';')
             writer.writerow(["No.", "Matricule", "Full Name", "Email Address", "Wilaya", "Group", "Phone Number", "Registration Date"])
@@ -357,15 +359,11 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 clean_phone = html.escape(phone) if phone else ""
                 clean_matricule = html.escape(matricule) if matricule else ""
 
-                with open(DATA_FILE, "r", encoding="utf-8") as f:
-                    db = json.load(f)
-
-                if "students" not in db:
-                    db["students"] = []
+                students = load_students_list()
 
                 # Find if student with same ID, matricule, email, or exact name exists
                 existing_idx = None
-                for idx, s in enumerate(db["students"]):
+                for idx, s in enumerate(students):
                     if student_id and s.get("id") == student_id:
                         existing_idx = idx
                         break
@@ -381,17 +379,17 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
 
                 now_iso = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
                 if existing_idx is not None:
-                    db["students"][existing_idx]["fullName"] = clean_name
+                    students[existing_idx]["fullName"] = clean_name
                     if clean_email:
-                        db["students"][existing_idx]["email"] = clean_email
-                    db["students"][existing_idx]["wilaya"] = clean_wilaya
-                    db["students"][existing_idx]["group"] = clean_group
+                        students[existing_idx]["email"] = clean_email
+                    students[existing_idx]["wilaya"] = clean_wilaya
+                    students[existing_idx]["group"] = clean_group
                     if clean_matricule:
-                        db["students"][existing_idx]["matricule"] = clean_matricule
+                        students[existing_idx]["matricule"] = clean_matricule
                     if clean_phone:
-                        db["students"][existing_idx]["phone"] = clean_phone
-                    db["students"][existing_idx]["updatedAt"] = now_iso
-                    student_obj = db["students"][existing_idx]
+                        students[existing_idx]["phone"] = clean_phone
+                    students[existing_idx]["updatedAt"] = now_iso
+                    student_obj = students[existing_idx]
                     action_msg = "Information updated successfully!"
                 else:
                     new_id = student_id if student_id else f"std_{int(time.time())}_{uuid.uuid4().hex[:6]}"
@@ -405,20 +403,18 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                         "phone": clean_phone,
                         "registeredAt": now_iso
                     }
-                    db["students"].append(student_obj)
+                    students.append(student_obj)
                     action_msg = "Registration submitted successfully!"
 
                 # Sort alphabetically by full name
-                db["students"].sort(key=lambda x: x.get("fullName", "").lower())
-
-                with open(DATA_FILE, "w", encoding="utf-8") as f:
-                    json.dump(db, f, indent=2, ensure_ascii=False)
+                students.sort(key=lambda x: x.get("fullName", "").lower())
+                save_students_list(students)
 
                 self._send_json({
                     "success": True,
                     "message": action_msg,
                     "student": student_obj,
-                    "totalStudents": len(db["students"])
+                    "totalStudents": len(students)
                 })
             except Exception as e:
                 self._send_json({"error": "Server error: " + str(e)}, 500)
@@ -445,24 +441,18 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             try:
-                with open(DATA_FILE, "r", encoding="utf-8") as f:
-                    db = json.load(f)
-
-                if "students" not in db:
-                    db["students"] = []
-
-                db["students"] = [
-                    s for s in db.get("students", []) 
+                students = load_students_list()
+                filtered = [
+                    s for s in students 
                     if (not student_id or s.get("id") != student_id)
                     and (not student_matricule or str(s.get("matricule", "")).strip().lower() != student_matricule)
                     and (not student_email or s.get("email", "").lower() != student_email)
                     and (not student_name or s.get("fullName", "").lower() != student_name)
                 ]
 
-                with open(DATA_FILE, "w", encoding="utf-8") as f:
-                    json.dump(db, f, indent=2, ensure_ascii=False)
+                save_students_list(filtered)
 
-                self._send_json({"success": True, "message": "Student removed successfully", "total": len(db["students"])})
+                self._send_json({"success": True, "message": "Student removed successfully", "total": len(filtered)})
             except Exception as e:
                 self._send_json({"error": str(e)}, 500)
             return

@@ -14,6 +14,8 @@ module.exports = (req, res) => {
   }
 
   const filePath = path.join(process.cwd(), 'data.json');
+  const studentsPath = path.join(process.cwd(), 'api', 'students-store.json');
+
   try {
     const raw = fs.readFileSync(filePath, 'utf8');
     const data = JSON.parse(raw);
@@ -21,8 +23,16 @@ module.exports = (req, res) => {
     const key = (req.query && req.query.key) || req.headers['x-teacher-key'] || '';
     const isTeacher = (key === TEACHER_KEY);
 
-    // OWASP Data Privacy: Hide student directory from unauthorized public requests
-    if (!isTeacher && data.students) {
+    if (isTeacher) {
+      if (fs.existsSync(studentsPath)) {
+        try {
+          data.students = JSON.parse(fs.readFileSync(studentsPath, 'utf8'));
+        } catch(e) {
+          data.students = [];
+        }
+      }
+    } else {
+      // OWASP Pen-test requirement: strip student directory for public queries
       data.students = [];
     }
 

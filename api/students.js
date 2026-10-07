@@ -21,13 +21,14 @@ module.exports = (req, res) => {
     });
   }
 
-  const filePath = path.join(process.cwd(), 'data.json');
+  const studentsPath = path.join(process.cwd(), 'api', 'students-store.json');
   try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(raw);
-    const students = data.students || [];
+    let students = [];
+    if (fs.existsSync(studentsPath)) {
+      students = JSON.parse(fs.readFileSync(studentsPath, 'utf8'));
+    }
     return res.status(200).json({ students, total: students.length, authenticated: true });
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to read data' });
+    return res.status(500).json({ error: 'Failed to read student data' });
   }
 };
