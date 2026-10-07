@@ -928,14 +928,15 @@ body {
 
 <!-- Modal: Share with Teacher / Mobile Sync -->
 <div id="shareTeacherModal" class="modal-overlay">
-  <div class="modal-card" style="max-width: 500px;">
+  <div class="modal-card" style="max-width: 520px;">
     <div class="modal-header">
       <h3>📲 Share Roster with Teacher (Mobile Sync)</h3>
       <button class="modal-close" onclick="closeModal('shareTeacherModal')">✕</button>
     </div>
-    <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+    <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:12px;">
       This link embeds all assigned student Wilayas directly into the URL. When the teacher opens this link on her phone, all Wilayas will import and save permanently to her mobile device!
     </p>
+    <div id="teacherShareCount" style="font-size:12.5px; font-weight:700; color:#166534; margin-bottom:10px;"></div>
     <div style="margin-bottom:14px;">
       <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Teacher Sync Link</label>
       <input type="text" id="teacherShareUrlInput" class="input-search" style="width:100%; font-family:monospace; font-size:11px;" readonly onclick="this.select()">
@@ -1086,6 +1087,11 @@ function checkIncomingSync() {
   }
 }
 
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.add('active');
+}
+
 function copyTeacherShareLink() {
   let wilayaMap = {};
 
@@ -1107,6 +1113,7 @@ function copyTeacherShareLink() {
     });
   }
 
+  const assignedCount = allStudents.filter(s => s && s.wilaya && s.wilaya.trim()).length;
   const base64Data = encodeWilayaPayload(wilayaMap);
   let origin = window.location.origin;
   let pathname = window.location.pathname;
@@ -1118,12 +1125,33 @@ function copyTeacherShareLink() {
 
   const inputEl = document.getElementById('teacherShareUrlInput');
   if (inputEl) inputEl.value = shareUrl;
+
+  const countEl = document.getElementById('teacherShareCount');
+  if (countEl) {
+    countEl.textContent = `✅ Link includes ${assignedCount} assigned student Wilayas ready to sync.`;
+  }
+
   openModal('shareTeacherModal');
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      showToast('📋 Share link copied! Ready to send to the teacher.');
-    }).catch(() => {});
+  // Copy with fallback
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast(`📋 Share link with ${assignedCount} Wilayas copied!`);
+      }).catch(() => {
+        if (inputEl) {
+          inputEl.select();
+          document.execCommand('copy');
+        }
+        showToast('📋 Share link ready to send!');
+      });
+    } else if (inputEl) {
+      inputEl.select();
+      document.execCommand('copy');
+      showToast('📋 Share link ready to send!');
+    }
+  } catch(e) {
+    showToast('📋 Share link generated!');
   }
 }
 
@@ -1131,12 +1159,23 @@ function copyModalShareUrl() {
   const inputEl = document.getElementById('teacherShareUrlInput');
   if (!inputEl) return;
   inputEl.select();
-  navigator.clipboard.writeText(inputEl.value).then(() => {
-    showToast('📋 Copied share link to clipboard!');
-  }).catch(() => {
+  inputEl.setSelectionRange(0, 99999);
+  let copied = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(inputEl.value).then(() => {
+        showToast('📋 Copied share link to clipboard!');
+      }).catch(() => {
+        document.execCommand('copy');
+        showToast('📋 Copied share link to clipboard!');
+      });
+      copied = true;
+    }
+  } catch(e) {}
+  if (!copied) {
     document.execCommand('copy');
     showToast('📋 Copied share link to clipboard!');
-  });
+  }
 }
 
 function shareViaWhatsApp() {
