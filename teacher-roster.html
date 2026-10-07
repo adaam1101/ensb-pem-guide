@@ -517,12 +517,14 @@ body {
   .letterhead-top { justify-content: center; text-align: center; }
   .toolbar-banner { flex-direction: column; align-items: stretch; }
   .card-header-bar { flex-direction: column; align-items: stretch; }
-  .student-headline { flex-wrap: wrap; gap: 6px; }
+  .student-headline { flex-wrap: wrap; gap: 6px; align-items: center; }
   .wilaya-pill {
-    padding: 2.5px 20px 2.5px 8px;
-    font-size: 11px;
-    min-height: 25px;
-    max-width: 155px;
+    padding: 3px 22px 3px 9px;
+    font-size: 11.5px;
+    min-height: 28px;
+    max-width: 100%;
+    width: auto;
+    line-height: 1.4;
   }
 }
 
@@ -758,8 +760,14 @@ body {
       <button class="btn btn-outline btn-sm" onclick="fetchTeacherStudents(true)" id="refreshBtn">
         🔄 Refresh
       </button>
+      <button class="btn btn-primary btn-sm" onclick="copyTeacherShareLink()" style="background:#0F4D2A; border-color:#0F4D2A; color:#FFF; font-weight:800;" title="Share link with teacher containing all assigned Wilayas pre-loaded">
+        📲 Share with Teacher (Includes All Wilayas)
+      </button>
       <button class="btn btn-excel btn-sm" onclick="exportToExcel('xlsx')">
         📥 Export to Excel (.xlsx)
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="downloadUpdatedDataJson()" title="Download updated data.json with all customized Wilayas">
+        💾 Export data.json
       </button>
       <button class="btn btn-outline btn-sm" onclick="exportToExcel('csv')">
         📄 Download CSV (.csv)
@@ -915,6 +923,31 @@ body {
         <button type="submit" class="btn btn-primary btn-sm">Save Wilaya</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Modal: Share with Teacher / Mobile Sync -->
+<div id="shareTeacherModal" class="modal-overlay">
+  <div class="modal-card" style="max-width: 500px;">
+    <div class="modal-header">
+      <h3>📲 Share Roster with Teacher (Mobile Sync)</h3>
+      <button class="modal-close" onclick="closeModal('shareTeacherModal')">✕</button>
+    </div>
+    <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+      This link embeds all assigned student Wilayas directly into the URL. When the teacher opens this link on her phone, all Wilayas will import and save permanently to her mobile device!
+    </p>
+    <div style="margin-bottom:14px;">
+      <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Teacher Sync Link</label>
+      <input type="text" id="teacherShareUrlInput" class="input-search" style="width:100%; font-family:monospace; font-size:11px;" readonly onclick="this.select()">
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button type="button" class="btn btn-outline btn-sm" onclick="closeModal('shareTeacherModal')">Close</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="copyModalShareUrl()">📋 Copy Link</button>
+      <button type="button" class="btn btn-sm" style="background:#25D366; color:#FFF; font-weight:700;" onclick="shareViaWhatsApp()">💬 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Confirm Delete Student -->
 <div id="deleteConfirmModal" class="modal-overlay">
   <div class="modal-card" style="max-width: 410px; text-align: center;">
@@ -953,8 +986,192 @@ const TEACHER_AUTH_KEY = "ensb2026";
 let activeKey = "";
 let allStudents = [];
 
+// --- Resilient Wilaya Normalizer ---
+function findMatchingWilaya(val) {
+  if (!val) return '';
+  const clean = String(val).trim();
+  if (!clean) return '';
+  
+  // 1. Direct case-insensitive match
+  const direct = ALGERIAN_WILAYAS.find(w => w.toLowerCase() === clean.toLowerCase());
+  if (direct) return direct;
+  
+  // 2. Match by two-digit province code e.g. "16", "35", "09", "15"
+  const codeMatch = clean.match(/^(\d{1,2})/);
+  if (codeMatch) {
+    const code = codeMatch[1].padStart(2, '0');
+    const byCode = ALGERIAN_WILAYAS.find(w => w.startsWith(code));
+    if (byCode) return byCode;
+  }
+  
+  // 3. Substring & accent-insensitive match (e.g. "boumerdes" -> "35 - Boumerdès")
+  const normClean = clean.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  const byName = ALGERIAN_WILAYAS.find(w => {
+    const normW = w.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    return (normClean.length >= 3 && normW.includes(normClean)) || (normW.length >= 6 && normClean.includes(normW.slice(2)));
+  });
+  if (byName) return byName;
+  
+  return clean;
+}
+
+// --- Cross-Device Wilaya Sync Engine ---
+function encodeWilayaPayload(map) {
+  const jsonStr = JSON.stringify(map);
+  const utf8Bytes = new TextEncoder().encode(jsonStr);
+  let binary = '';
+  for (let i = 0; i < utf8Bytes.length; i++) binary += String.fromCharCode(utf8Bytes[i]);
+  return btoa(binary);
+}
+
+function decodeWilayaPayload(base64Str) {
+  const binary = atob(base64Str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  const jsonStr = new TextDecoder('utf-8').decode(bytes);
+  return JSON.parse(jsonStr);
+}
+
+function checkIncomingSync() {
+  try {
+    const hash = window.location.hash || '';
+    if (!hash.includes('sync=')) return;
+
+    const rawSync = hash.split('sync=')[1];
+    if (!rawSync) return;
+
+    const incomingMap = decodeWilayaPayload(decodeURIComponent(rawSync));
+    if (incomingMap && typeof incomingMap === 'object') {
+      let savedWilayas = {};
+      try {
+        savedWilayas = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+      } catch(e) {}
+
+      let updatedCount = 0;
+      Object.keys(incomingMap).forEach(k => {
+        const w = incomingMap[k];
+        if (w) {
+          const matched = findMatchingWilaya(w);
+          savedWilayas[k.toLowerCase().trim()] = matched;
+          updatedCount++;
+        }
+      });
+
+      localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedWilayas));
+
+      // Also apply to in-memory students immediately if already loaded
+      if (Array.isArray(allStudents) && allStudents.length > 0) {
+        allStudents.forEach(s => {
+          const sId = String(s.id || '').toLowerCase().trim();
+          const sMat = String(s.matricule || '').toLowerCase().trim();
+          const sEmail = String(s.email || '').toLowerCase().trim();
+          const sName = String(s.fullName || '').toLowerCase().trim();
+          const w = savedWilayas[sId] || (sMat && savedWilayas[sMat]) || (sEmail && savedWilayas[sEmail]) || (sName && savedWilayas[sName]);
+          if (w) s.wilaya = findMatchingWilaya(w);
+        });
+        updateStatsCounters();
+        renderTable();
+      }
+
+      showToast(`🎉 Student Wilayas synchronized successfully! (${updatedCount} mapped)`);
+
+      // Clean hash from address bar
+      if (window.history && window.history.replaceState) {
+        const cleanUrl = window.location.pathname + window.location.search;
+        window.history.replaceState(null, '', cleanUrl);
+      }
+    }
+  } catch(err) {
+    console.warn('Sync decode error:', err);
+  }
+}
+
+function copyTeacherShareLink() {
+  let wilayaMap = {};
+
+  // 1. From savedWilayas
+  try {
+    const saved = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+    Object.assign(wilayaMap, saved);
+  } catch(e) {}
+
+  // 2. From allStudents
+  if (Array.isArray(allStudents)) {
+    allStudents.forEach(s => {
+      if (s && s.wilaya && s.wilaya.trim()) {
+        const matched = findMatchingWilaya(s.wilaya);
+        if (s.matricule) wilayaMap[String(s.matricule).toLowerCase().trim()] = matched;
+        if (s.id) wilayaMap[String(s.id).toLowerCase().trim()] = matched;
+        if (s.fullName) wilayaMap[String(s.fullName).toLowerCase().trim()] = matched;
+      }
+    });
+  }
+
+  const base64Data = encodeWilayaPayload(wilayaMap);
+  let origin = window.location.origin;
+  let pathname = window.location.pathname;
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    origin = 'https://adaam1101.github.io';
+    pathname = '/ensb-pem-guide/teacher-roster.html';
+  }
+  const shareUrl = `${origin}${pathname}?key=${activeKey || TEACHER_AUTH_KEY}#sync=${base64Data}`;
+
+  const inputEl = document.getElementById('teacherShareUrlInput');
+  if (inputEl) inputEl.value = shareUrl;
+  openModal('shareTeacherModal');
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showToast('📋 Share link copied! Ready to send to the teacher.');
+    }).catch(() => {});
+  }
+}
+
+function copyModalShareUrl() {
+  const inputEl = document.getElementById('teacherShareUrlInput');
+  if (!inputEl) return;
+  inputEl.select();
+  navigator.clipboard.writeText(inputEl.value).then(() => {
+    showToast('📋 Copied share link to clipboard!');
+  }).catch(() => {
+    document.execCommand('copy');
+    showToast('📋 Copied share link to clipboard!');
+  });
+}
+
+function shareViaWhatsApp() {
+  const inputEl = document.getElementById('teacherShareUrlInput');
+  if (!inputEl) return;
+  const msg = encodeURIComponent(`Bonjour Madame, voici le lien officiel du portail enseignant avec toutes les Wilayas des étudiants du Groupe 05 pré-enregistrées :\n\n${inputEl.value}`);
+  window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+}
+
+function downloadUpdatedDataJson() {
+  fetch('data.json?t=' + Date.now()).then(r => r.json()).then(data => {
+    data.students = allStudents;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 Downloaded updated data.json!');
+  }).catch(() => {
+    const blob = new Blob([JSON.stringify({ students: allStudents }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('💾 Downloaded updated data.json!');
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   populateWilayas();
+  checkIncomingSync();
   checkAuthentication();
 });
 
@@ -1001,6 +1218,7 @@ async function unlockView() {
   document.getElementById('shieldSection').style.display = 'none';
   document.getElementById('rosterSection').style.display = 'block';
   await fetchTeacherStudents();
+  checkIncomingSync();
 }
 
 // MULTI-SOURCE RESILIENT LOADER
@@ -1092,8 +1310,10 @@ async function fetchTeacherStudents(showToastMsg = false) {
     const sEmail = String(s.email || '').toLowerCase().trim();
     const sName = String(s.fullName || '').toLowerCase().trim();
     const w = savedWilayas[sId] || (sMat && savedWilayas[sMat]) || (sEmail && savedWilayas[sEmail]) || (sName && savedWilayas[sName]);
-    if (w && (!s.wilaya || !s.wilaya.trim())) {
-      s.wilaya = w;
+    if (w) {
+      s.wilaya = findMatchingWilaya(w);
+    } else if (s.wilaya) {
+      s.wilaya = findMatchingWilaya(s.wilaya);
     }
   };
 
@@ -1133,7 +1353,7 @@ async function fetchTeacherStudents(showToastMsg = false) {
     if (existingIdx >= 0) {
       mergedList[existingIdx] = { ...mergedList[existingIdx], ...ls };
       if (ls.wilaya && ls.wilaya.trim()) {
-        mergedList[existingIdx].wilaya = ls.wilaya;
+        mergedList[existingIdx].wilaya = findMatchingWilaya(ls.wilaya);
       }
     } else {
       mergedList.push(ls);
@@ -1242,16 +1462,17 @@ function renderTable() {
       ? (nameParts[0][0] + nameParts[1][0]).toUpperCase()
       : nameParts[0].slice(0, 2).toUpperCase();
 
-    const isAssigned = Boolean(s.wilaya && s.wilaya.trim());
+    const assignedWilaya = findMatchingWilaya(s.wilaya);
+    const isAssigned = Boolean(assignedWilaya && assignedWilaya.trim());
     const selectClass = isAssigned ? 'wilaya-pill assigned' : 'wilaya-pill unassigned';
 
     const wilayaOpts = ALGERIAN_WILAYAS.map(w => 
-      `<option value="${w}" ${s.wilaya === w ? 'selected' : ''}>📍 ${w}</option>`
+      `<option value="${w}" ${assignedWilaya === w ? 'selected' : ''}>📍 ${w}</option>`
     ).join('');
 
     const wilayaPillHTML = `
       <div class="wilaya-pill-wrapper">
-        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id)}', this.value)" title="Click to assign or change Wilaya for ${escapeHTML(s.fullName)}">
+        <select class="${selectClass}" onchange="updateWilayaDirect('${escapeHTML(s.id || s.matricule)}', this.value)" title="Click to assign or change Wilaya for ${escapeHTML(s.fullName)}">
           <option value="">📍 Set Wilaya...</option>
           ${wilayaOpts}
         </select>
@@ -1306,10 +1527,11 @@ function renderTable() {
 
 // DIRECT INLINE WILAYA UPDATE (Instant, 0 Modals, Works on All Phones)
 async function updateWilayaDirect(id, newWilaya) {
-  const std = allStudents.find(s => String(s.id) === String(id));
+  const std = allStudents.find(s => String(s.id) === String(id) || (s.matricule && String(s.matricule) === String(id)));
   if (!std) return;
 
-  std.wilaya = newWilaya;
+  const matched = newWilaya ? findMatchingWilaya(newWilaya) : '';
+  std.wilaya = matched;
 
   // 1. Persist to dedicated ensb_student_wilayas map (key-value store)
   try {
@@ -1318,8 +1540,8 @@ async function updateWilayaDirect(id, newWilaya) {
       .filter(Boolean)
       .map(k => String(k).toLowerCase().trim());
 
-    if (newWilaya) {
-      keys.forEach(k => { savedWilayas[k] = newWilaya; });
+    if (matched) {
+      keys.forEach(k => { savedWilayas[k] = matched; });
     } else {
       keys.forEach(k => { delete savedWilayas[k]; });
     }
@@ -1332,9 +1554,9 @@ async function updateWilayaDirect(id, newWilaya) {
     if (!Array.isArray(localList)) localList = [];
     const idx = localList.findIndex(s => areSameStudent(s, std));
     if (idx >= 0) {
-      localList[idx] = { ...localList[idx], ...std, wilaya: newWilaya };
+      localList[idx] = { ...localList[idx], ...std, wilaya: matched };
     } else {
-      localList.push({ ...std, wilaya: newWilaya });
+      localList.push({ ...std, wilaya: matched });
     }
     localStorage.setItem('ensb_registered_students', JSON.stringify(localList));
   } catch(err) {}
@@ -1750,7 +1972,7 @@ try {
 } catch(e) {}
 
 window.addEventListener('storage', (e) => {
-  if (e.key === 'ensb_registered_students') {
+  if (e.key === 'ensb_registered_students' || e.key === 'ensb_student_wilayas') {
     fetchTeacherStudents();
   }
 });
