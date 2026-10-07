@@ -733,21 +733,53 @@ input, select, textarea, button {
 
     <!-- TAB 5: STUDENTS & CLASS ROSTER -->
     <section class="admin-section" id="tab-students">
-      <div class="section-head-bar">
+      <div class="section-head-bar" style="margin-bottom:18px">
         <div>
-          <div class="section-head-title">Group 05 Class Roster &amp; Students</div>
-          <div style="font-size:13px;color:var(--text-muted)">Manage registered students, export to Excel, and copy student/teacher links.</div>
+          <div class="section-head-title">Groupe 05 — Registre des Étudiants &amp; Wilayas</div>
+          <div style="font-size:13px;color:var(--text-muted)">Gérez les 40 étudiants, visualisez et attribuez les Wilayas de résidence, et partagez les accès.</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="copyPortalStudentLink()">🔗 Copier Lien Inscription</button>
-          <button class="btn btn-outline" onclick="copyPortalTeacherLink()">👩‍🏫 Copier Lien Enseignant</button>
-          <a href="/api/export-students-csv?key=ensb2026" class="btn btn-outline" style="text-decoration:none">📥 Export Excel (.csv)</a>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-outline" onclick="openTeacherRoster()">👩‍🏫 Portail Enseignant</button>
+          <button class="btn btn-outline" onclick="copyPortalTeacherLink()">📋 Copier Lien Enseignant</button>
+          <button class="btn btn-outline" onclick="copyPortalStudentLink()">🔗 Lien Inscription</button>
+          <button class="btn btn-outline" onclick="exportStudentsToCSV()">📥 Exporter Excel (.csv)</button>
           <button class="btn btn-primary" onclick="openNewStudentModal()">+ Ajouter un Étudiant</button>
         </div>
       </div>
 
-      <div style="margin-bottom:14px;display:flex;gap:10px;">
-        <input type="text" id="adminStudentSearch" class="form-input" placeholder="🔍 Rechercher par nom, email ou wilaya..." oninput="renderAdminStudents()" style="max-width:360px">
+      <!-- Quick KPI Stats Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:18px">
+        <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:26px">👥</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;color:var(--text-main)" id="kpiTotalStudents">0</div>
+            <div style="font-size:12px;color:var(--text-muted);font-weight:600">Total Inscrits</div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #A7F3D0;border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:26px">📍</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#065F46" id="kpiWilayasAssigned">0</div>
+            <div style="font-size:12px;color:#047857;font-weight:600">Wilayas Renseignées</div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #FECACA;border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:26px">⚠️</div>
+          <div>
+            <div style="font-size:18px;font-weight:800;color:#DC2626" id="kpiWilayasMissing">0</div>
+            <div style="font-size:12px;color:#B91C1C;font-weight:600">Wilayas Manquantes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="adminStudentSearch" class="form-input" placeholder="🔍 Rechercher par nom, matricule, email ou wilaya..." oninput="renderAdminStudents()" style="flex:1;min-width:240px;max-width:380px">
+        <select id="adminWilayaFilter" class="form-input" onchange="renderAdminStudents()" style="min-width:220px">
+          <option value="">Toutes les Wilayas</option>
+          <option value="assigned">📍 Avec Wilaya</option>
+          <option value="unassigned">⚠️ Sans Wilaya</option>
+        </select>
       </div>
 
       <div id="adminStudentsList"></div>
@@ -959,12 +991,87 @@ async function loadInitialData() {
     if (!currentData.teachers) currentData.teachers = [];
     if (!currentData.students) currentData.students = [];
 
-    // Merge any locally registered students from this browser
+    // 1. Filter out permanently deleted students from blacklist
+    try {
+      const deletedList = (JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]')).map(x => String(x).toLowerCase().trim());
+      if (deletedList.length > 0) {
+        currentData.students = currentData.students.filter(s => {
+          const sId = String(s.id || '').toLowerCase().trim();
+          const sMat = String(s.matricule || '').toLowerCase().trim();
+          const sEmail = String(s.email || '').toLowerCase().trim();
+          const sName = String(s.fullName || '').toLowerCase().trim();
+          return !(
+            (sId && deletedList.includes(sId)) ||
+            (sMat && deletedList.includes(sMat)) ||
+            (sEmail && deletedList.includes(sEmail)) ||
+            (sName && deletedList.includes(sName))
+          );
+        });
+      }
+    } catch(e) {}
+
+    // 2. Ensure Adam Ameyoud is officially 23 - Annaba
+    currentData.students.forEach(s => {
+      const sName = String(s.fullName || '').toLowerCase().trim();
+      const sMat = String(s.matricule || '').trim();
+      const sId = String(s.id || '').trim();
+      if (sName.includes('adam ameyoud') || sMat === '36216301' || sId === 'std_01') {
+        s.wilaya = "23 - Annaba";
+      }
+    });
+
+    // 3. Restore any custom wilayas from dedicated local storage
+    try {
+      const savedW = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+      currentData.students.forEach(s => {
+        const sName = String(s.fullName || '').toLowerCase().trim();
+        const sMat = String(s.matricule || '').trim();
+        const sId = String(s.id || '').trim();
+        if (sName.includes('adam ameyoud') || sMat === '36216301' || sId === 'std_01') {
+          s.wilaya = "23 - Annaba";
+          return;
+        }
+        const sEmail = String(s.email || '').toLowerCase().trim();
+        const w = savedW[sId.toLowerCase()] || (sMat && savedW[sMat.toLowerCase()]) || (sEmail && savedW[sEmail]) || (sName && savedW[sName]);
+        if (w) s.wilaya = w;
+      });
+    } catch(e) {}
+
+    // 4. Merge locally registered students (skipping deleted ones)
     try {
       const localStds = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+      const deletedList = (JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]')).map(x => String(x).toLowerCase().trim());
       if (Array.isArray(localStds)) {
         localStds.forEach(ls => {
-          if (!currentData.students.some(s => (s.email && s.email.toLowerCase() === (ls.email || '').toLowerCase()) || (s.fullName && s.fullName.toLowerCase() === (ls.fullName || '').toLowerCase()))) {
+          const lsId = String(ls.id || '').toLowerCase().trim();
+          const lsMat = String(ls.matricule || '').toLowerCase().trim();
+          const lsEmail = String(ls.email || '').toLowerCase().trim();
+          const lsName = String(ls.fullName || '').toLowerCase().trim();
+
+          if (
+            (lsId && deletedList.includes(lsId)) ||
+            (lsMat && deletedList.includes(lsMat)) ||
+            (lsEmail && deletedList.includes(lsEmail)) ||
+            (lsName && deletedList.includes(lsName))
+          ) {
+            return;
+          }
+
+          if (lsName.includes('adam ameyoud')) {
+            ls.wilaya = "23 - Annaba";
+          }
+
+          const existing = currentData.students.find(s => 
+            (s.id && s.id === ls.id) ||
+            (s.matricule && ls.matricule && s.matricule === ls.matricule) ||
+            (s.email && ls.email && s.email.toLowerCase() === ls.email.toLowerCase()) ||
+            (s.fullName && ls.fullName && s.fullName.toLowerCase() === ls.fullName.toLowerCase())
+          );
+          if (existing) {
+            if (ls.wilaya && (!existing.wilaya || lsName.includes('adam ameyoud'))) {
+              existing.wilaya = ls.wilaya;
+            }
+          } else {
             currentData.students.push(ls);
           }
         });
@@ -1239,27 +1346,73 @@ function renderStats() {
 /* ==========================================================================
    CLASS ROSTER & STUDENTS MANAGEMENT
    ========================================================================== */
+function populateAdminWilayaFilter() {
+  const filter = document.getElementById('adminWilayaFilter');
+  if (!filter || filter.options.length > 3) return;
+  ALGERIAN_WILAYAS.forEach(w => {
+    if (!w) return;
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    filter.appendChild(opt);
+  });
+}
+
 function renderAdminStudents() {
   const container = document.getElementById('adminStudentsList');
   if (!container) return;
 
+  populateAdminWilayaFilter();
+
   const search = (document.getElementById('adminStudentSearch')?.value || '').toLowerCase().trim();
-  const students = (currentData.students || []).filter(s => {
-    if (!search) return true;
-    return (s.fullName || '').toLowerCase().includes(search) ||
-           (s.email || '').toLowerCase().includes(search) ||
-           (s.wilaya || '').toLowerCase().includes(search);
+  const wilayaFilter = document.getElementById('adminWilayaFilter')?.value || '';
+
+  const allStds = currentData.students || [];
+
+  // Update KPI counters
+  const total = allStds.length;
+  const assigned = allStds.filter(s => s && s.wilaya && s.wilaya.trim()).length;
+  const missing = total - assigned;
+
+  const kpiTot = document.getElementById('kpiTotalStudents');
+  if (kpiTot) kpiTot.textContent = total;
+  const kpiAss = document.getElementById('kpiWilayasAssigned');
+  if (kpiAss) kpiAss.textContent = `${assigned} / ${total}`;
+  const kpiMis = document.getElementById('kpiWilayasMissing');
+  if (kpiMis) kpiMis.textContent = missing;
+
+  const students = allStds.filter(s => {
+    // Search filter
+    if (search) {
+      const match = (s.fullName || '').toLowerCase().includes(search) ||
+                    (s.matricule || '').toLowerCase().includes(search) ||
+                    (s.email || '').toLowerCase().includes(search) ||
+                    (s.wilaya || '').toLowerCase().includes(search) ||
+                    (s.phone || '').toLowerCase().includes(search);
+      if (!match) return false;
+    }
+
+    // Wilaya dropdown filter
+    if (wilayaFilter === 'assigned') {
+      return Boolean(s.wilaya && s.wilaya.trim());
+    } else if (wilayaFilter === 'unassigned') {
+      return !s.wilaya || !s.wilaya.trim();
+    } else if (wilayaFilter) {
+      return s.wilaya === wilayaFilter;
+    }
+
+    return true;
   });
 
   if (students.length === 0) {
     container.innerHTML = `
       <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-lg);padding:36px;text-align:center;color:var(--text-muted)">
         <div style="font-size:36px;margin-bottom:8px">👥</div>
-        <div style="font-size:16px;font-weight:700">Aucun étudiant dans la liste</div>
-        <div style="font-size:13px;margin-top:4px">Partagez le lien d'inscription aux camarades ou ajoutez un étudiant manuellement.</div>
+        <div style="font-size:16px;font-weight:700">Aucun étudiant ne correspond à cette sélection</div>
+        <div style="font-size:13px;margin-top:4px">Modifiez vos critères de recherche ou réinitialisez les filtres.</div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="copyPortalStudentLink()">🔗 Copier Lien Inscription</button>
-          <button class="btn btn-outline" onclick="openNewStudentModal()">+ Ajouter Étudiant Manuellement</button>
+          <button class="btn btn-outline" onclick="document.getElementById('adminStudentSearch').value='';document.getElementById('adminWilayaFilter').value='';renderAdminStudents()">🔄 Réinitialiser les Filtres</button>
+          <button class="btn btn-primary" onclick="openNewStudentModal()">+ Ajouter un Étudiant</button>
         </div>
       </div>
     `;
@@ -1268,33 +1421,43 @@ function renderAdminStudents() {
 
   let html = `
     <div style="background:#FFFFFF;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
-      <div style="overflow-x:auto">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
         <table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left">
           <thead>
             <tr style="background:var(--bg-subtle);border-bottom:2px solid var(--border)">
               <th style="padding:12px 16px;font-weight:700;color:var(--text-muted);width:40px">N°</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Matricule</th>
               <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Nom &amp; Prénom</th>
-              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Email</th>
               <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Wilaya</th>
-              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Groupe</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Email</th>
               <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Téléphone</th>
-              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted);text-align:right">Action</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted)">Groupe</th>
+              <th style="padding:12px 16px;font-weight:700;color:var(--text-muted);text-align:right">Actions</th>
             </tr>
           </thead>
           <tbody>
   `;
 
   students.forEach((s, idx) => {
+    const hasWilaya = Boolean(s.wilaya && s.wilaya.trim());
+    const wilayaBadge = hasWilaya
+      ? `<span style="background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46;border-radius:999px;padding:3px 10px;font-weight:700;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">📍 ${escapeHTML(s.wilaya)}</span>`
+      : `<span style="background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;border-radius:999px;padding:3px 10px;font-weight:600;font-size:12px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px">⚠️ Non définie</span>`;
+
     html += `
-      <tr style="border-bottom:1px solid var(--border)">
+      <tr style="border-bottom:1px solid var(--border);transition:background 0.15s ease" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">
         <td style="padding:12px 16px;color:var(--text-light);font-weight:700">${idx + 1}</td>
+        <td style="padding:12px 16px"><code style="background:#F1F5F9;padding:2px 6px;border-radius:4px;font-weight:700;color:var(--text-main);font-size:12px">${escapeHTML(s.matricule || '—')}</code></td>
         <td style="padding:12px 16px;font-weight:700;color:var(--text-main)">${escapeHTML(s.fullName)}</td>
-        <td style="padding:12px 16px"><a href="mailto:${escapeHTML(s.email)}" style="color:var(--primary);text-decoration:none;font-weight:600">✉️ ${escapeHTML(s.email)}</a></td>
-        <td style="padding:12px 16px"><span style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:999px;padding:3px 10px;font-weight:700;font-size:12px">📍 ${escapeHTML(s.wilaya)}</span></td>
-        <td style="padding:12px 16px"><span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${escapeHTML(s.group || 'Groupe 05')}</span></td>
+        <td style="padding:12px 16px">${wilayaBadge}</td>
+        <td style="padding:12px 16px">${s.email ? `<a href="mailto:${escapeHTML(s.email)}" style="color:var(--primary);text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:4px">✉️ ${escapeHTML(s.email)}</a>` : '—'}</td>
         <td style="padding:12px 16px;color:var(--text-muted)">${escapeHTML(s.phone || '—')}</td>
+        <td style="padding:12px 16px"><span style="background:#DCFCE7;color:#166534;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700">${escapeHTML(s.group || 'Group 05')}</span></td>
         <td style="padding:12px 16px;text-align:right">
-          <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;color:var(--danger);border-color:var(--danger-border);background:var(--danger-bg)" onclick="deleteAdminStudent('${s.id}')">Supprimer</button>
+          <div style="display:flex;gap:6px;justify-content:flex-end">
+            <button class="btn btn-outline" style="padding:4px 9px;font-size:11px;font-weight:700" onclick="openEditStudentModal('${s.id}')">✏️ Modifier</button>
+            <button class="btn btn-outline" style="padding:4px 9px;font-size:11px;font-weight:700;color:var(--danger);border-color:var(--danger-border);background:var(--danger-bg)" onclick="deleteAdminStudent('${s.id}')">🗑️ Supprimer</button>
+          </div>
         </td>
       </tr>
     `;
@@ -1309,72 +1472,184 @@ function renderAdminStudents() {
   container.innerHTML = html;
 }
 
-function copyPortalStudentLink() {
-  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'register.html';
-  navigator.clipboard.writeText(url).then(() => showToast('🔗 Lien d\'inscription pour les étudiants copié !'));
-}
+function openEditStudentModal(id) {
+  const s = (currentData.students || []).find(item => item.id === id);
+  if (!s) return;
+  const currentWilaya = s.wilaya || '';
 
-function copyPortalTeacherLink() {
-  const url = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'teacher-roster.html?key=ensb2026';
-  navigator.clipboard.writeText(url).then(() => showToast('👩‍🏫 Lien de consultation pour l\'enseignante copié ! (Clé incluse)'));
-}
+  const wilayaOptions = ALGERIAN_WILAYAS.map(w => {
+    const sel = (w === currentWilaya || (currentWilaya && w.toLowerCase().includes(currentWilaya.toLowerCase()))) ? 'selected' : '';
+    return `<option value="${escapeHTML(w)}" ${sel}>${escapeHTML(w)}</option>`;
+  }).join('');
 
-function openNewStudentModal() {
-  const modal = document.getElementById('modalWindowContent');
-  modal.innerHTML = `
-    <div style="font-size:17px;font-weight:800;margin-bottom:14px">Ajouter un étudiant au Groupe 05</div>
+  openModal(`
+    <div style="font-size:18px;font-weight:800;color:var(--text-main);margin-bottom:6px">✏️ Modifier l'étudiant</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Mettez à jour les informations de l'étudiant et sa Wilaya officielle.</div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div>
-        <label class="form-label">Nom et Prénom *</label>
-        <input type="text" id="newStdName" class="form-input" placeholder="ex: Sarah Belkacem">
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Nom et Prénom *</label>
+        <input type="text" id="editStdName" class="form-input" style="width:100%" value="${escapeHTML(s.fullName || '')}">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Matricule</label>
+          <input type="text" id="editStdMatricule" class="form-input" style="width:100%" value="${escapeHTML(s.matricule || '')}" placeholder="ex: 36216301">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Groupe</label>
+          <input type="text" id="editStdGroup" class="form-input" style="width:100%" value="${escapeHTML(s.group || 'Group 05')}">
+        </div>
       </div>
       <div>
-        <label class="form-label">Email *</label>
-        <input type="email" id="newStdEmail" class="form-input" placeholder="ex: sarah.belkacem@ensb.dz">
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Email Académique *</label>
+        <input type="email" id="editStdEmail" class="form-input" style="width:100%" value="${escapeHTML(s.email || '')}" placeholder="ex: prenom.nom@ensb.dz">
       </div>
       <div>
-        <label class="form-label">Wilaya *</label>
-        <select id="newStdWilaya" class="form-input">
-          <option value="">Sélectionnez la Wilaya...</option>
-          ${ALGERIAN_WILAYAS.map(w => `<option value="${w}">${w}</option>`).join('')}
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">📍 Wilaya de Résidence</label>
+        <select id="editStdWilaya" class="form-input" style="width:100%">
+          <option value="">-- Sélectionner la Wilaya --</option>
+          ${wilayaOptions}
         </select>
       </div>
       <div>
-        <label class="form-label">Groupe</label>
-        <input type="text" id="newStdGroup" class="form-input" value="Groupe 05">
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Téléphone / WhatsApp</label>
+        <input type="tel" id="editStdPhone" class="form-input" style="width:100%" value="${escapeHTML(s.phone || '')}" placeholder="ex: +213 795 52 33 99">
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="updateAdminStudent('${s.id}')">💾 Enregistrer les Modifications</button>
+    </div>
+  `);
+}
+
+async function updateAdminStudent(id) {
+  const s = (currentData.students || []).find(item => item.id === id);
+  if (!s) return;
+
+  const fullName = document.getElementById('editStdName').value.trim();
+  const matricule = document.getElementById('editStdMatricule').value.trim();
+  const email = document.getElementById('editStdEmail').value.trim().toLowerCase();
+  const wilaya = document.getElementById('editStdWilaya').value.trim();
+  const group = document.getElementById('editStdGroup').value.trim() || 'Group 05';
+  const phone = document.getElementById('editStdPhone').value.trim();
+
+  if (!fullName) {
+    alert('Veuillez renseigner le nom complet.');
+    return;
+  }
+
+  s.fullName = fullName;
+  s.matricule = matricule;
+  s.email = email;
+  s.wilaya = wilaya;
+  s.group = group;
+  s.phone = phone;
+  s.updatedAt = new Date().toISOString();
+
+  // Persist wilaya to localStorage
+  try {
+    let savedW = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+    if (s.id) savedW[String(s.id).toLowerCase().trim()] = wilaya;
+    if (matricule) savedW[String(matricule).toLowerCase().trim()] = wilaya;
+    if (email) savedW[String(email).toLowerCase().trim()] = wilaya;
+    if (fullName) savedW[String(fullName).toLowerCase().trim()] = wilaya;
+    localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedW));
+  } catch(e) {}
+
+  // Update in local registered students cache if present
+  try {
+    let localStds = JSON.parse(localStorage.getItem('ensb_registered_students') || '[]');
+    if (Array.isArray(localStds)) {
+      const idx = localStds.findIndex(x => x.id === id || (x.matricule && x.matricule === matricule));
+      if (idx >= 0) {
+        localStds[idx] = { ...localStds[idx], ...s };
+      } else {
+        localStds.push(s);
+      }
+      localStorage.setItem('ensb_registered_students', JSON.stringify(localStds));
+    }
+  } catch(e) {}
+
+  closeModal();
+  renderAll();
+  showToast(`✅ Étudiant ${fullName} mis à jour avec succès !`);
+
+  // Auto-sync if server connected
+  if (currentPassword) {
+    try {
+      await fetch('/api/register-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(s)
+      });
+    } catch(e) {}
+  }
+}
+
+function openNewStudentModal() {
+  openModal(`
+    <div style="font-size:18px;font-weight:800;color:var(--text-main);margin-bottom:6px">➕ Ajouter un Étudiant au Groupe 05</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Renseignez les coordonnées de l'étudiant pour l'ajouter au registre officiel.</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Nom et Prénom *</label>
+        <input type="text" id="newStdName" class="form-input" style="width:100%" placeholder="ex: Sarah Belkacem">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Matricule</label>
+          <input type="text" id="newStdMatricule" class="form-input" style="width:100%" placeholder="ex: 36216350">
+        </div>
+        <div>
+          <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Groupe</label>
+          <input type="text" id="newStdGroup" class="form-input" style="width:100%" value="Group 05">
+        </div>
       </div>
       <div>
-        <label class="form-label">Téléphone / WhatsApp</label>
-        <input type="tel" id="newStdPhone" class="form-input" placeholder="ex: 0555 12 34 56">
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Email Académique *</label>
+        <input type="email" id="newStdEmail" class="form-input" style="width:100%" placeholder="ex: sarah.belkacem@ensb.dz">
+      </div>
+      <div>
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">📍 Wilaya de Résidence</label>
+        <select id="newStdWilaya" class="form-input" style="width:100%">
+          <option value="">Sélectionnez la Wilaya...</option>
+          ${ALGERIAN_WILAYAS.map(w => `<option value="${escapeHTML(w)}">${escapeHTML(w)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="form-label" style="font-size:12px;font-weight:700;color:var(--text-main);display:block;margin-bottom:4px">Téléphone / WhatsApp</label>
+        <input type="tel" id="newStdPhone" class="form-input" style="width:100%" placeholder="ex: +213 555 12 34 56">
       </div>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
-      <button class="btn btn-primary" onclick="saveNewStudent()">Ajouter</button>
+      <button class="btn btn-primary" onclick="saveNewStudent()">➕ Ajouter au Registre</button>
     </div>
-  `;
-  document.getElementById('portalModal').style.display = 'flex';
+  `);
 }
 
 async function saveNewStudent() {
   const fullName = document.getElementById('newStdName').value.trim();
+  const matricule = document.getElementById('newStdMatricule').value.trim();
   const email = document.getElementById('newStdEmail').value.trim().toLowerCase();
   const wilaya = document.getElementById('newStdWilaya').value.trim();
-  const group = document.getElementById('newStdGroup').value.trim() || 'Groupe 05';
+  const group = document.getElementById('newStdGroup').value.trim() || 'Group 05';
   const phone = document.getElementById('newStdPhone').value.trim();
 
-  if (!fullName || !email || !wilaya) {
-    alert('Veuillez renseigner le nom, l\'email et la wilaya.');
+  if (!fullName) {
+    alert('Veuillez renseigner le nom complet.');
     return;
   }
 
   const studentObj = {
     id: 'std_' + Date.now(),
+    matricule: matricule || '',
     fullName,
-    email,
-    wilaya,
+    email: email || '',
+    wilaya: wilaya || '',
     group,
-    phone,
+    phone: phone || '',
     registeredAt: new Date().toISOString()
   };
 
@@ -1382,34 +1657,131 @@ async function saveNewStudent() {
   currentData.students.push(studentObj);
   currentData.students.sort((a,b) => (a.fullName || '').localeCompare(b.fullName || ''));
 
+  if (wilaya) {
+    try {
+      let savedW = JSON.parse(localStorage.getItem('ensb_student_wilayas') || '{}');
+      if (studentObj.id) savedW[studentObj.id] = wilaya;
+      if (matricule) savedW[matricule] = wilaya;
+      if (fullName) savedW[fullName] = wilaya;
+      localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedW));
+    } catch(e) {}
+  }
+
   closeModal();
   renderAll();
-  showToast('Étudiant ajouté ! Synchronisez avec le serveur pour sauvegarder.');
-}
-
-async function deleteAdminStudent(id) {
-  if (!confirm('Êtes-vous sûr de vouloir supprimer cet étudiant de la liste ?')) return;
+  showToast(`✅ Étudiant ${fullName} ajouté ! Pensez à synchroniser les modifications.`);
 
   if (currentPassword) {
     try {
-      const res = await fetch('/api/delete-student', {
+      await fetch('/api/register-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentObj)
+      });
+    } catch(e) {}
+  }
+}
+
+async function deleteAdminStudent(id) {
+  const s = (currentData.students || []).find(item => item.id === id);
+  const name = s ? s.fullName : 'cet étudiant';
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer définitivement ${name} de la liste ?`)) return;
+
+  // Add to deleted blacklist in localStorage so it never reappears on refresh
+  try {
+    let deletedList = JSON.parse(localStorage.getItem('ensb_deleted_students') || '[]');
+    if (!Array.isArray(deletedList)) deletedList = [];
+    if (id) deletedList.push(id.toLowerCase());
+    if (s && s.matricule) deletedList.push(String(s.matricule).toLowerCase());
+    if (s && s.email) deletedList.push(s.email.toLowerCase());
+    if (s && s.fullName) deletedList.push(s.fullName.toLowerCase());
+    localStorage.setItem('ensb_deleted_students', JSON.stringify(deletedList));
+  } catch(e) {}
+
+  if (currentPassword) {
+    try {
+      await fetch('/api/delete-student', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: currentPassword, id })
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        currentData.students = currentData.students.filter(s => s.id !== id);
-        renderAll();
-        showToast('Étudiant supprimé avec succès !');
-        return;
-      }
     } catch(e) {}
   }
 
-  currentData.students = currentData.students.filter(s => s.id !== id);
+  currentData.students = (currentData.students || []).filter(item => item.id !== id);
   renderAll();
-  showToast('Étudiant retiré de la liste.');
+  showToast(`🗑️ ${name} retiré de la liste.`);
+}
+
+function openTeacherRoster() {
+  let origin = window.location.origin;
+  let pathname = window.location.pathname.replace(/[^/]*$/, '');
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    origin = 'https://ensb-pem-guide.vercel.app';
+    pathname = '/';
+  }
+  window.open(`${origin}${pathname}teacher-roster.html?key=ensb2026`, '_blank');
+}
+
+function copyPortalTeacherLink() {
+  let origin = window.location.origin;
+  let pathname = window.location.pathname.replace(/[^/]*$/, '');
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    origin = 'https://ensb-pem-guide.vercel.app';
+    pathname = '/';
+  }
+  const url = `${origin}${pathname}teacher-roster.html?key=ensb2026`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => showToast('👩‍🏫 Lien de consultation Enseignante copié ! (Clé incluse)'));
+  } else {
+    prompt('Copiez le lien Enseignante ci-dessous :', url);
+  }
+}
+
+function copyPortalStudentLink() {
+  let origin = window.location.origin;
+  let pathname = window.location.pathname.replace(/[^/]*$/, '');
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    origin = 'https://ensb-pem-guide.vercel.app';
+    pathname = '/';
+  }
+  const url = `${origin}${pathname}register.html`;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(() => showToast('🔗 Lien d\'inscription pour les étudiants copié !'));
+  } else {
+    prompt('Copiez le lien d\'inscription ci-dessous :', url);
+  }
+}
+
+function exportStudentsToCSV() {
+  const list = currentData.students || [];
+  if (list.length === 0) {
+    showToast('Aucun étudiant à exporter.');
+    return;
+  }
+  let csv = '\uFEFFN°;Matricule;Nom & Prénom;Email;Wilaya;Groupe;Téléphone\n';
+  list.forEach((s, idx) => {
+    const row = [
+      idx + 1,
+      `"${(s.matricule || '').replace(/"/g, '""')}"`,
+      `"${(s.fullName || '').replace(/"/g, '""')}"`,
+      `"${(s.email || '').replace(/"/g, '""')}"`,
+      `"${(s.wilaya || '').replace(/"/g, '""')}"`,
+      `"${(s.group || 'Group 05').replace(/"/g, '""')}"`,
+      `"${(s.phone || '').replace(/"/g, '""')}"`
+    ];
+    csv += row.join(';') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ENSB_PEM2_Groupe05_Etudiants_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('📥 Fichier Excel (.csv) exporté avec succès !');
 }
 
 /* ==========================================================================
@@ -2122,25 +2494,63 @@ async function submitChangePassword() {
    UTILITIES
    ========================================================================== */
 function openModal(html) {
-  document.getElementById('modalWindowContent').innerHTML = html;
-  document.getElementById('portalModal').classList.add('open');
+  const m = document.getElementById('portalModal');
+  const c = document.getElementById('modalWindowContent');
+  if (c) c.innerHTML = html;
+  if (m) {
+    m.classList.add('open');
+    m.style.display = 'flex';
+  }
 }
+
 function closeModal() {
-  document.getElementById('portalModal').classList.remove('open');
+  const m = document.getElementById('portalModal');
+  if (m) {
+    m.classList.remove('open');
+    m.style.display = 'none';
+  }
 }
 
 function showToast(msg) {
   const t = document.getElementById('toastNotice');
+  if (!t) return;
   t.textContent = msg;
   t.style.display = 'block';
   setTimeout(() => { t.style.display = 'none'; }, 3000);
 }
 
 function sanitize(str) {
-  if (!str) return '';
+  if (str === null || str === undefined) return '';
   const d = document.createElement('div');
-  d.textContent = str;
+  d.textContent = String(str);
   return d.innerHTML;
+}
+
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function saveToLiveServer() {
+  return saveDataEverywhere();
+}
+
+function downloadBackupJson() {
+  const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('💾 data.json téléchargé avec succès !');
 }
 </script>
 </body>

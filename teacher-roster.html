@@ -1348,6 +1348,18 @@ async function fetchTeacherStudents(showToastMsg = false) {
     const sMat = String(s.matricule || '').toLowerCase().trim();
     const sEmail = String(s.email || '').toLowerCase().trim();
     const sName = String(s.fullName || '').toLowerCase().trim();
+
+    // Adam Ameyoud is officially 23 - Annaba
+    if (sName.includes('adam ameyoud') || sMat === '36216301' || sId === 'std_01') {
+      s.wilaya = "23 - Annaba";
+      if (savedWilayas[sId]) savedWilayas[sId] = "23 - Annaba";
+      if (savedWilayas[sMat]) savedWilayas[sMat] = "23 - Annaba";
+      if (savedWilayas[sEmail]) savedWilayas[sEmail] = "23 - Annaba";
+      if (savedWilayas[sName]) savedWilayas[sName] = "23 - Annaba";
+      try { localStorage.setItem('ensb_student_wilayas', JSON.stringify(savedWilayas)); } catch(e) {}
+      return;
+    }
+
     const w = savedWilayas[sId] || (sMat && savedWilayas[sMat]) || (sEmail && savedWilayas[sEmail]) || (sName && savedWilayas[sName]);
     if (w) {
       s.wilaya = findMatchingWilaya(w);

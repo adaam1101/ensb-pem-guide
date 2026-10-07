@@ -219,10 +219,11 @@ class EnsSecureHandler(http.server.SimpleHTTPRequestHandler):
                     pass
             output = io.StringIO()
             writer = csv.writer(output, delimiter=';')
-            writer.writerow(["No.", "Full Name", "Email Address", "Wilaya", "Group", "Phone Number", "Registration Date"])
+            writer.writerow(["No.", "Matricule", "Full Name", "Email Address", "Wilaya", "Group", "Phone Number", "Registration Date"])
             for idx, s in enumerate(students, 1):
                 writer.writerow([
                     idx,
+                    s.get("matricule", ""),
                     s.get("fullName", ""),
                     s.get("email", ""),
                     s.get("wilaya", ""),
